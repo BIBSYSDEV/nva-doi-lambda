@@ -29,8 +29,6 @@ public class App implements RequestHandler<String, Object> {
     int external_service_timeout = 30000;
     final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
 
-
-
     public Object handleRequest(String url, Context context) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -48,10 +46,6 @@ public class App implements RequestHandler<String, Object> {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             statusCode= 503;
-            json = "{\"error\": \"" + e.getMessage() + "\"}";
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            statusCode = 500;
             json = "{\"error\": \"" + e.getMessage() + "\"}";
         }
         return new GatewayResponse(json, headers, statusCode);

@@ -18,98 +18,97 @@ import static org.junit.Assert.*;
 
 public class AppTest {
 
-  private App app;
+    private App app;
 
-  @Before
-  public void setUp()  {
-    app = new App();
-  }
-
-  @Test
-  public void successfulResponse() {
-    String url = "https://doi.org/10.1093/afraf/ady029";
-    GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
-    assertEquals(200, result.getStatusCode());
-    assertEquals(result.getHeaders().get("Content-Type"), "application/json");
-    String content = result.getBody();
-    assertNotNull(content);
-    assertTrue(content.contains(url));
-    assertTrue(content.contains("The political economy of banking in Angola"));
-  }
-
-  @Test
-  public void testBadRequestResponse() {
-    String url = "htps://doi.org/10.1093/afraf/ady029";
-    GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
-    assertEquals(400, result.getStatusCode());
-    assertEquals(result.getHeaders().get("Content-Type"), "application/json");
-    String content = result.getBody();
-    assertNotNull(content);
-    assertEquals("{\"error\": \"unknown protocol: htps\"}", content);
-  }
-
-  @Test
-  public void testServerTimeoutResponse() {
-    app.setExternalServiceTimeout(10);
-    String url = "https://doi.org/10.1093/afraf/ady029";
-    GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
-    assertEquals(503, result.getStatusCode());
-    assertEquals(result.getHeaders().get("Content-Type"), "application/json");
-    String content = result.getBody();
-    assertNotNull(content);
-    assertEquals("{\"error\": \"connect timed out\"}", content);
-  }
-
-  @Test
-  public void test_getValidURI_valid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
-    String url = "https://doi.org/10.1093/afraf/ady029";
-    assertEquals(url, app.getValidURI(url, 1024));
-  }
-
-  @Test(expected = URISyntaxException.class)
-  public void test_getValidURI_invalid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
-    String url = "https:// doi.org/";
-    app.getValidURI(url, 1024);
-    fail();
-  }
-
-  @Test(expected = MalformedParametersException.class)
-  public void test_getValidURI_invalidLength() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
-    String url = "https://doi.org/10.1093/afraf/ady029";
-    app.getValidURI(url, 10);
-    fail();
-  }
-
-  @Test(expected = MalformedParametersException.class)
-  public void test_getValidURI_nullURL() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
-    app.getValidURI(null, 1024);
-    fail();
-  }
-
-
-  @Test
-  public void test_extract_metadata_from_resource_content() throws IOException {
-    String doi_articles_1 = readTestResourceFile("/doi_article_1.json");
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    String mock_response = gson.toJson(doi_articles_1, String.class);
-    String doiMetadata_json = app.getDoiMetadata_json("https://doi.org/10.1007/s40518-018-0111-y");
-    assertEquals(mock_response, doiMetadata_json);
-  }
-
-  @Test(expected = IOException.class)
-  public void test_getDoiMetadata_json_url_no_uri() throws IOException {
-    String url = "https://doi.org/lets^Go^Wild";
-    app.getDoiMetadata_json(url);
-    fail();
-  }
-
-  private String readTestResourceFile(String testFileName) throws NullPointerException {
-    InputStream inputStream = AppTest.class.getResourceAsStream(testFileName);
-    try (Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.toString())) {
-      scanner.useDelimiter("\\A");
-      return scanner.hasNext() ? scanner.next() : "";
+    @Before
+    public void setUp() {
+        app = new App();
     }
-  }
+
+    @Test
+    public void successfulResponse() {
+        String url = "https://doi.org/10.1093/afraf/ady029";
+        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        assertEquals(200, result.getStatusCode());
+        assertEquals(result.getHeaders().get("Content-Type"), "application/json");
+        String content = result.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(url));
+        assertTrue(content.contains("The political economy of banking in Angola"));
+    }
+
+    @Test
+    public void testBadRequestResponse() {
+        String url = "htps://doi.org/10.1093/afraf/ady029";
+        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        assertEquals(400, result.getStatusCode());
+        assertEquals(result.getHeaders().get("Content-Type"), "application/json");
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals("{\"error\": \"unknown protocol: htps\"}", content);
+    }
+
+    @Test
+    public void testServerTimeoutResponse() {
+        app.setExternalServiceTimeout(10);
+        String url = "https://doi.org/10.1093/afraf/ady029";
+        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        assertEquals(503, result.getStatusCode());
+        assertEquals(result.getHeaders().get("Content-Type"), "application/json");
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals("{\"error\": \"connect timed out\"}", content);
+    }
+
+    @Test
+    public void test_getValidURI_valid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+        String url = "https://doi.org/10.1093/afraf/ady029";
+        assertEquals(url, app.getValidURI(url, 1024));
+    }
+
+    @Test(expected = URISyntaxException.class)
+    public void test_getValidURI_invalid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+        String url = "https:// doi.org/";
+        app.getValidURI(url, 1024);
+        fail();
+    }
+
+    @Test(expected = MalformedParametersException.class)
+    public void test_getValidURI_invalidLength() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+        String url = "https://doi.org/10.1093/afraf/ady029";
+        app.getValidURI(url, 10);
+        fail();
+    }
+
+    @Test(expected = MalformedParametersException.class)
+    public void test_getValidURI_nullURL() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+        app.getValidURI(null, 1024);
+        fail();
+    }
+
+    @Test
+    public void test_extract_metadata_from_resource_content() throws IOException {
+        String doi_articles_1 = readTestResourceFile("/doi_article_1.json");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String mock_response = gson.toJson(doi_articles_1, String.class);
+        String doiMetadata_json = app.getDoiMetadata_json("https://doi.org/10.1007/s40518-018-0111-y");
+        assertEquals(mock_response, doiMetadata_json);
+    }
+
+    @Test(expected = IOException.class)
+    public void test_getDoiMetadata_json_url_no_uri() throws IOException {
+        String url = "https://doi.org/lets^Go^Wild";
+        app.getDoiMetadata_json(url);
+        fail();
+    }
+
+    private String readTestResourceFile(String testFileName) throws NullPointerException {
+        InputStream inputStream = AppTest.class.getResourceAsStream(testFileName);
+        try (Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.toString())) {
+            scanner.useDelimiter("\\A");
+            return scanner.hasNext() ? scanner.next() : "";
+        }
+    }
 
 
 }

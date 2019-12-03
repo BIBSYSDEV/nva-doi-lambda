@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Handler for requests to Lambda function.
  */
-public class App implements RequestHandler<String, Object> {
+public class FetchDoiMetadata implements RequestHandler<String, Object> {
 
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
+    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
     int external_service_timeout = 30000;
     final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";

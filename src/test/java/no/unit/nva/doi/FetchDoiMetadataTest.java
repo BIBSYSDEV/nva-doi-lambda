@@ -16,19 +16,19 @@ import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
-public class AppTest {
+public class FetchDoiMetadataTest {
 
-    private App app;
+    private FetchDoiMetadata fetchDoiMetadata;
 
     @Before
     public void setUp() {
-        app = new App();
+        fetchDoiMetadata = new FetchDoiMetadata();
     }
 
     @Test
     public void successfulResponse() {
         String url = "https://doi.org/10.1093/afraf/ady029";
-        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(url, null);
         assertEquals(200, result.getStatusCode());
         assertEquals(result.getHeaders().get("Content-Type"), "application/json");
         String content = result.getBody();
@@ -40,7 +40,7 @@ public class AppTest {
     @Test
     public void testBadRequestResponse() {
         String url = "htps://doi.org/10.1093/afraf/ady029";
-        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(url, null);
         assertEquals(400, result.getStatusCode());
         assertEquals(result.getHeaders().get("Content-Type"), "application/json");
         String content = result.getBody();
@@ -50,9 +50,9 @@ public class AppTest {
 
     @Test
     public void testServerTimeoutResponse() {
-        app.setExternalServiceTimeout(10);
+        fetchDoiMetadata.setExternalServiceTimeout(10);
         String url = "https://doi.org/10.1093/afraf/ady029";
-        GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(url, null);
         assertEquals(503, result.getStatusCode());
         assertEquals(result.getHeaders().get("Content-Type"), "application/json");
         String content = result.getBody();
@@ -63,26 +63,26 @@ public class AppTest {
     @Test
     public void test_getValidURI_valid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
         String url = "https://doi.org/10.1093/afraf/ady029";
-        assertEquals(url, app.getValidURI(url, 1024));
+        assertEquals(url, fetchDoiMetadata.getValidURI(url, 1024));
     }
 
     @Test(expected = URISyntaxException.class)
     public void test_getValidURI_invalid() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
         String url = "https:// doi.org/";
-        app.getValidURI(url, 1024);
+        fetchDoiMetadata.getValidURI(url, 1024);
         fail();
     }
 
     @Test(expected = MalformedParametersException.class)
     public void test_getValidURI_invalidLength() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
         String url = "https://doi.org/10.1093/afraf/ady029";
-        app.getValidURI(url, 10);
+        fetchDoiMetadata.getValidURI(url, 10);
         fail();
     }
 
     @Test(expected = MalformedParametersException.class)
     public void test_getValidURI_nullURL() throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
-        app.getValidURI(null, 1024);
+        fetchDoiMetadata.getValidURI(null, 1024);
         fail();
     }
 
@@ -91,19 +91,19 @@ public class AppTest {
         String doi_articles_1 = readTestResourceFile("/doi_article_1.json");
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String mock_response = gson.toJson(doi_articles_1, String.class);
-        String doiMetadata_json = app.getDoiMetadata_json("https://doi.org/10.1007/s40518-018-0111-y");
+        String doiMetadata_json = fetchDoiMetadata.getDoiMetadata_json("https://doi.org/10.1007/s40518-018-0111-y");
         assertEquals(mock_response, doiMetadata_json);
     }
 
     @Test(expected = IOException.class)
     public void test_getDoiMetadata_json_url_no_uri() throws IOException {
         String url = "https://doi.org/lets^Go^Wild";
-        app.getDoiMetadata_json(url);
+        fetchDoiMetadata.getDoiMetadata_json(url);
         fail();
     }
 
     private String readTestResourceFile(String testFileName) throws NullPointerException {
-        InputStream inputStream = AppTest.class.getResourceAsStream(testFileName);
+        InputStream inputStream = FetchDoiMetadataTest.class.getResourceAsStream(testFileName);
         try (Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.toString())) {
             scanner.useDelimiter("\\A");
             return scanner.hasNext() ? scanner.next() : "";

@@ -25,12 +25,23 @@ public class AppTest {
   public void successfulResponse() {
     String url = "https://doi.org/10.1093/afraf/ady029";
     GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
-    assertEquals(result.getStatusCode(), 200);
+    assertEquals(200, result.getStatusCode());
     assertEquals(result.getHeaders().get("Content-Type"), "application/json");
     String content = result.getBody();
     assertNotNull(content);
     assertTrue(content.contains(url));
-    assertTrue(content.contains("\"title\": \"The political economy of banking in Angola\""));
+    assertTrue(content.contains("The political economy of banking in Angola"));
+  }
+
+  @Test
+  public void testBadRequestResponse() {
+    String url = "htps://doi.org/10.1093/afraf/ady029";
+    GatewayResponse result = (GatewayResponse) app.handleRequest(url, null);
+    assertEquals(400, result.getStatusCode());
+    assertEquals(result.getHeaders().get("Content-Type"), "application/json");
+    String content = result.getBody();
+    assertNotNull(content);
+    assertTrue(content.contains("{\"error\": \"unknown protocol: htps\"}"));
   }
 
   @Test

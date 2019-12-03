@@ -12,6 +12,10 @@ import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,29 +25,21 @@ import org.slf4j.LoggerFactory;
 public class App implements RequestHandler<String, Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
-    static int external_service_timeout = 30000;
 
-    static {
-        String externalServiceTimeout = System.getenv("EXTERNAL_SERVICE_TIMEOUT");
-        if (externalServiceTimeout != null && !externalServiceTimeout.isEmpty()) {
-            try {
-                external_service_timeout = Integer.getInteger(externalServiceTimeout);
-            } catch (NumberFormatException e) {
-                //ignore it, we use the default value.
-            }
-        }
-    }
+    int external_service_timeout = 30000;
+    final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
+
+
 
     public Object handleRequest(String url, Context context) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
-        String json = "{}";
+        String json;
         int statusCode;
         try {
-            MetadataExtractor metadataExtractor = new MetadataExtractor(external_service_timeout);
             final String uri = getValidURI(url, 1024);
-            json = metadataExtractor.getDoiMetadata_json(uri);
+            json = getDoiMetadata_json(uri);
             statusCode= 200;
         } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
             logger.warn(e.getMessage(), e);
@@ -68,6 +64,25 @@ public class App implements RequestHandler<String, Object> {
             throw new MalformedParametersException("url.length > " + maxLength);
         }
         return new URI(URLDecoder.decode(url, StandardCharsets.UTF_8.displayName())).toURL().toString();
+    }
+
+    String getDoiMetadata_json(String doi) throws IOException {
+        final String doiPath;
+        try {
+            doiPath = new URI(doi).getPath();
+        } catch (URISyntaxException e) {
+            logger.error("Error in url: " + doi, e);
+            throw new IOException(e.getMessage() + " " + doi, e);
+        }
+        final String dataCite = DATACITE_URL + doiPath;
+        final Connection connection = Jsoup.connect(dataCite).timeout(external_service_timeout).ignoreContentType(true);
+        String json = connection.get().wholeText();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(json);
+    }
+
+    void setExternalServiceTimeout(int externalServiceTimeout) {
+        external_service_timeout = externalServiceTimeout;
     }
 
 }

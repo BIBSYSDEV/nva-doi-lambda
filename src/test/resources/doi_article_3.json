@@ -1,0 +1,26 @@
+{
+  "dc.contributor.author": [
+    "United States Department Of Agriculture. Economic Research Service"
+  ],
+  "dc.creator": [
+    "United States Department of Agriculture. Economic Research Service"
+  ],
+  "dc.date.issued": [
+    "2018"
+  ],
+  "dc.description.abstract": [
+    "Limited access to supermarkets, supercenters, grocery stores, or other sources of healthy and affordable food may make it harder for some Americans to eat a healthy diet. Expanding the availability of nutritious and affordable food by developing and equipping grocery stores, small retailers, corner markets and farmers’ markets in communities with limited access is an important part of the Healthy Food Financing Initiative. There are many ways to define which areas are considered \"food deserts\" and many ways to measure food store access for individuals and for neighborhoods. Most measures and definitions take into account at least some of the following indicators of access:Accessibility to sources of healthy food, as measured by distance to a store or by the number of stores in an area.Individual-level resources that may affect accessibility, such as family income or vehicle availability.Neighborhood-level indicators of resources, such as the average income of the neighborhood and the availability of public transportation. In the Food Access Research Atlas, several options are available to describe food access along these dimensions. The Food Access Research Atlas presents a spatial overview of food access indicators for low-income and other census tracts using different measures of supermarket accessibility. It provides food access data for populations within census tracts and offers census-tract-level data on food access that can be downloaded for community planning or research purposes. This Atlas can be used to create maps showing food access indicators by census tract using different measures and indicators of supermarket accessibility. It can be used to compare food access measures based on 2015 data with the previous 2010 measures, view indicators of food access for selected subpopulations, and download census-tract-level data on food access measures."
+  ],
+  "dc.identifier.doi": [
+    "http://doi.org/10.3886/E101441V1"
+  ],
+  "dc.publisher": [
+    "Inter-university Consortium for Political and Social Research (ICPSR)"
+  ],
+  "dc.title": [
+    "USDA -Food Access"
+  ],
+  "dc.type": [
+    "Dataset"
+  ]
+}

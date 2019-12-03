@@ -1,0 +1,130 @@
+{
+  "HandheldFriendly": [
+    "true"
+  ],
+  "MobileOptimized": [
+    "width"
+  ],
+  "article:modified_time": [
+    "2018-05-23T11:03:39-04:00"
+  ],
+  "article:published_time": [
+    "2018-05-22T16:35:00-04:00"
+  ],
+  "article:publisher": [
+    "https://www.facebook.com/ScienceNOW"
+  ],
+  "dc.date": [
+    "2018-05-22T16:39:00-04:00"
+  ],
+  "dcterms.date": [
+    "2018-05-22T16:39:00-04:00"
+  ],
+  "description": [
+    "New research centers move 15-year project closer to reality"
+  ],
+  "fb:admins": [
+    "1400521805",
+    "2703576",
+    "678955044"
+  ],
+  "fb:app_id": [
+    "1478542162442556"
+  ],
+  "fb:pages": [
+    "100864590107"
+  ],
+  "news_authors": [
+    "Dennis Normile"
+  ],
+  "news_doi": [
+    "10.1126/science.aau2582"
+  ],
+  "news_key_words": [
+    "Asia, Brain \u0026 Behavior, Health"
+  ],
+  "news_section": [
+    "Latest News"
+  ],
+  "og:description": [
+    "New research centers move 15-year project closer to reality"
+  ],
+  "og:image": [
+    "https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/ca_0525NID_Elderly_People_China_Dementia_online.jpg?itok\u003dmDz-Z9rM"
+  ],
+  "og:image:height": [
+    "720"
+  ],
+  "og:image:secure_url": [
+    "https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/ca_0525NID_Elderly_People_China_Dementia_online.jpg?itok\u003dmDz-Z9rM"
+  ],
+  "og:image:type": [
+    "image/jpeg"
+  ],
+  "og:image:url": [
+    "https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/ca_0525NID_Elderly_People_China_Dementia_online.jpg?itok\u003dmDz-Z9rM"
+  ],
+  "og:image:width": [
+    "1280"
+  ],
+  "og:site_name": [
+    "Science | AAAS"
+  ],
+  "og:title": [
+    "Here’s how China is challenging the U.S. and European brain initiatives"
+  ],
+  "og:type": [
+    "article"
+  ],
+  "og:updated_time": [
+    "2018-05-23T11:03:39-04:00"
+  ],
+  "og:url": [
+    "https://www.sciencemag.org/news/2018/05/heres-how-china-challenging-us-and-european-brain-initiatives"
+  ],
+  "paywall": [
+    "true"
+  ],
+  "robots": [
+    "follow, index, noodp"
+  ],
+  "thumbnail": [
+    "https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/ca_0525NID_Elderly_People_China_Dementia_online.jpg?itok\u003dmDz-Z9rM"
+  ],
+  "twitter:card": [
+    "summary_large_image"
+  ],
+  "twitter:creator": [
+    "@NewsfromScience"
+  ],
+  "twitter:creator:id": [
+    "17089636"
+  ],
+  "twitter:description": [
+    "New research centers move 15-year project closer to reality"
+  ],
+  "twitter:image": [
+    "https://www.sciencemag.org/sites/default/files/styles/article_main_large/public/ca_0525NID_Elderly_People_China_Dementia_online.jpg?itok\u003dmDz-Z9rM"
+  ],
+  "twitter:image:height": [
+    "720"
+  ],
+  "twitter:image:width": [
+    "1280"
+  ],
+  "twitter:site": [
+    "@newsfromscience"
+  ],
+  "twitter:site:id": [
+    "17089636"
+  ],
+  "twitter:title": [
+    "Here’s how China is challenging the U.S. and European brain initiatives"
+  ],
+  "twitter:url": [
+    "https://www.sciencemag.org/news/2018/05/heres-how-china-challenging-us-and-european-brain-initiatives"
+  ],
+  "viewport": [
+    "width\u003ddevice-width, initial-scale\u003d1.0, shrink-to-fit\u003dno"
+  ]
+}

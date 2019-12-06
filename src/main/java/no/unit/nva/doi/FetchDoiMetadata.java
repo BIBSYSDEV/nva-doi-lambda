@@ -1,15 +1,5 @@
 package no.unit.nva.doi;
 
-import java.io.*;
-import java.lang.reflect.MalformedParametersException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
@@ -19,6 +9,17 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.MalformedParametersException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Handler for requests to Lambda function.
  */
@@ -26,18 +27,21 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
-    int external_service_timeout = 30000;
-    final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
+    /** Defines how long we wait for datacite to answer */
+    private transient int external_service_timeout = 30_000;
+    /** datacite's URL to access json-formatted metadata  */
+    private final static transient String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
 
+    @Override
     public Object handleRequest(String url, Context context) {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
         String json;
         int statusCode;
         try {
             final String uri = getValidURI(url, 1024);
-            json = getDoiMetadata_json(uri);
+            json = getDoiMetadataInJson(uri);
             statusCode= 200;
         } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
             logger.warn(e.getMessage(), e);
@@ -51,7 +55,16 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
         return new GatewayResponse(json, headers, statusCode);
     }
 
-    String getValidURI(String url, int maxLength) throws MalformedParametersException, UnsupportedEncodingException, URISyntaxException, MalformedURLException {
+    /**
+     * Helper method to check on url constraints as maxLength, emptiness, etc. returning the url UTF-8 encoded.
+     * @param url url as String
+     * @param maxLength maximum length of the url (default=1024)
+     * @return UTF-8 encoded url
+     * @throws UnsupportedEncodingException
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    protected String getValidURI(String url, int maxLength) throws UnsupportedEncodingException, URISyntaxException, MalformedURLException {
         if (url == null || url.isEmpty()) {
             throw new MalformedParametersException("url=" + url);
         } else if (url.length() > maxLength ) {
@@ -60,7 +73,14 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
         return new URI(URLDecoder.decode(url, StandardCharsets.UTF_8.displayName())).toURL().toString();
     }
 
-    String getDoiMetadata_json(String doi) throws IOException {
+    /**
+     * The method takes a doi-url as String and returns the corresponding metadata of a publication
+     * as a json-formatted String.
+     * @param doi String representing a doi-url
+     * @return a json containing metadata to the publication given by its doi
+     * @throws IOException
+     */
+    protected String getDoiMetadataInJson(String doi) throws IOException {
         final String doiPath;
         try {
             doiPath = new URI(doi).getPath();
@@ -75,7 +95,11 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
         return gson.toJson(json);
     }
 
-    void setExternalServiceTimeout(int externalServiceTimeout) {
+    /**
+     * Set the timeout interval to wait for datacite to answer.
+     * @param externalServiceTimeout
+     */
+    protected void setExternalServiceTimeout(int externalServiceTimeout) {
         external_service_timeout = externalServiceTimeout;
     }
 

@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 public class FetchDoiMetadataTest {
 
-    private FetchDoiMetadata fetchDoiMetadata;
+    private transient FetchDoiMetadata fetchDoiMetadata;
 
     @Before
     public void setUp() {
@@ -91,14 +91,14 @@ public class FetchDoiMetadataTest {
         String doi_articles_1 = readTestResourceFile("/doi_article_1.json");
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String mock_response = gson.toJson(doi_articles_1, String.class);
-        String doiMetadata_json = fetchDoiMetadata.getDoiMetadata_json("https://doi.org/10.1007/s40518-018-0111-y");
+        String doiMetadata_json = fetchDoiMetadata.getDoiMetadataInJson("https://doi.org/10.1007/s40518-018-0111-y");
         assertEquals(mock_response, doiMetadata_json);
     }
 
     @Test(expected = IOException.class)
     public void test_getDoiMetadata_json_url_no_uri() throws IOException {
         String url = "https://doi.org/lets^Go^Wild";
-        fetchDoiMetadata.getDoiMetadata_json(url);
+        fetchDoiMetadata.getDoiMetadataInJson(url);
         fail();
     }
 

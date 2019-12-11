@@ -17,11 +17,13 @@ repositories {
 }
 
 dependencies {
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
     implementation group: 'org.slf4j', name: 'slf4j-api', version:'1.7.29'
     implementation group: 'org.jsoup', name: 'jsoup', version:'1.12.1'
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
     testImplementation 'junit:junit:4.12'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 
     shadowJar { zip64 true }
 }
@@ -37,7 +39,7 @@ jar.enabled = false
 project.tasks.build.dependsOn project.tasks.shadowJar
 
 pmd {
-    toolVersion = '6.17.0'
+    toolVersion = '6.18.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
@@ -46,7 +48,7 @@ pmd {
 checkstyle {
     configFile = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml').asFile()
     showViolations = true
-    toolVersion '8.21'
+    toolVersion '8.23'
 }
 
 tasks.withType(Checkstyle) {
@@ -66,7 +68,7 @@ jacocoTestReport {
 }
 
 jacoco {
-    toolVersion = "0.8.4"
+    toolVersion = "0.8.5"
 }
 
 check.dependsOn jacocoTestCoverageVerification
@@ -78,7 +80,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'METHOD'
                 value = 'COVEREDRATIO'
-                minimum = 0.75
+                minimum = 1
             }
         }
 
@@ -86,7 +88,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'CLASS'
                 value = 'COVEREDRATIO'
-                minimum = 0.75
+                minimum = 1
             }
         }
     }

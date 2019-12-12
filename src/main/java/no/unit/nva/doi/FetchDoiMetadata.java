@@ -31,7 +31,8 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
     public static final String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
     public static final String ERROR_KEY = "error";
-    transient DataciteConnection dataciteConnection;
+    /** Connection object handling the direct communication via http for (mock)-testing to be injected */
+    protected transient DataciteConnection dataciteConnection;
 
     public FetchDoiMetadata() {
         dataciteConnection = new DataciteConnection();

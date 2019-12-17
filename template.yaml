@@ -10,7 +10,29 @@ Globals:
   Function:
     Timeout: 20
 
+Parameters:
+  CognitoAuthorizerArn:
+    Type: String
+    Description: Reference to Cognito UserPool for the stage
+  CustomDomain:
+    Type: String
+    Description: Custom API to connect this lambda to
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+
 Resources:
+
+  NvaDoiFunctionApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !Ref CognitoAuthorizerArn
+
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -18,26 +40,19 @@ Resources:
       Handler: NvaDoi.FetchDoiMetadata::handleRequest
       Runtime: java8
       MemorySize: 1408
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-        Variables:
-          PARAM1: VALUE
       Events:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /doi
+            Path: /
             Method: get
+            RestApiId: !Ref NvaDoiFunctionApi
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  NvaDoiApi:
-    Description: "API Gateway endpoint URL for Prod stage for NVA DOI function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/doi/"
-  NvaDoiFunction:
-    Description: "NVA DOI Lambda Function ARN"
-    Value: !GetAtt NvaDoiFunction.Arn
-  NvaDoiFunctionIamRole:
-    Description: "Implicit IAM Role created for NVA DOI function"
-    Value: !GetAtt NvaDoiFunctionRole.Arn
+  NvaDoiFunctionBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref CustomDomainBasePath
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref NvaDoiFunctionApi
+      Stage: !Ref NvaDoiFunctionApi.Stage
+

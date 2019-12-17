@@ -11,19 +11,8 @@ phases:
 #      # Upgrade AWS CLI to the latest version
 #      - pip3 install --upgrade awscli
 #
-#      # Install aws-sam-cli
+      # Install aws-sam-cli
       - pip3 install aws-sam-cli
-#
-#      # Install project requirements
-#      - pip3 install -r src/requirements.txt
-#
-#  pre_build:
-#    commands:
-#
-#      # Discover and run unit tests in the 'test' directory. For more information, see <https://docs.python.org/3/library/unittest.html#test-discovery>
-#      - python3 -m unittest discover test
-
-
 
   build:
     commands:

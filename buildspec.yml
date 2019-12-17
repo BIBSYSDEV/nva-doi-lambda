@@ -9,3 +9,7 @@ phases:
   build:
     commands:
       - ./gradlew build
+
+artifacts:
+  files:
+    - template.yaml

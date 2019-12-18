@@ -1,6 +1,7 @@
 package no.unit.nva.doi;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -44,6 +45,8 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
 
     @Override
     public Object handleRequest(String url, Context context) {
+        LambdaLogger logger = context.getLogger();
+        logger.log("Incoming url:"+url);
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
@@ -59,11 +62,11 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
                 json = this.getDoiMetadataInJson(uri);
                 statusCode = Response.Status.OK;
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-                logger.warn(e.getMessage(), e);
+                FetchDoiMetadata.logger.warn(e.getMessage(), e);
                 statusCode = Response.Status.BAD_REQUEST;
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                FetchDoiMetadata.logger.error(e.getMessage(), e);
                 statusCode = Response.Status.SERVICE_UNAVAILABLE;
                 json = getErrorAsJson(e.getMessage());
             }

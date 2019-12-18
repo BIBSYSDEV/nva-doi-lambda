@@ -47,6 +47,8 @@ Resources:
             Path: /
             Method: get
             RestApiId: !Ref NvaDoiFunctionApi
+            RequestParameters:
+              - method.request.querystring.url
 
   NvaDoiFunctionBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

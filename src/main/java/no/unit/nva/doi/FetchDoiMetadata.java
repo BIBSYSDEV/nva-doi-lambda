@@ -45,8 +45,10 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
 
     @Override
     public Object handleRequest(String url, Context context) {
-        LambdaLogger logger = context.getLogger();
-        logger.log("Incoming url:"+url);
+        if (context != null && context.getLogger() != null) {
+            LambdaLogger logger = context.getLogger();
+            logger.log("Incoming url:" + url);
+        }
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);

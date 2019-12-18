@@ -1,9 +1,9 @@
 plugins {
     id 'java'
-    id 'checkstyle'
-    id 'pmd'
-    id 'jacoco'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+//    id 'checkstyle'
+//    id 'pmd'
+//    id 'jacoco'
+//    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 group 'no.unit.nva'
@@ -28,10 +28,6 @@ dependencies {
 }
 
 
-test {
-    failFast = true
-    finalizedBy jacocoTestReport
-}
 
 task buildZip(type: Zip) {
     from compileJava
@@ -43,63 +39,3 @@ task buildZip(type: Zip) {
 
 build.dependsOn buildZip
 
-
-// We don't want a jar, just a fatJar
-//jar.enabled = false
-//project.tasks.build.dependsOn project.tasks.shadowJar
-
-pmd {
-    toolVersion = '6.18.0'
-    ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
-    ruleSets = []
-    ignoreFailures = false
-}
-
-checkstyle {
-    configFile = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml').asFile()
-    showViolations = true
-    toolVersion '8.23'
-}
-
-tasks.withType(Checkstyle) {
-    reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet rootProject.resources.text.fromFile('config/checkstyle/checkstyle-simple.xsl')
-    }
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/reports/jacoco")
-    }
-}
-
-jacoco {
-    toolVersion = "0.8.5"
-}
-
-check.dependsOn jacocoTestCoverageVerification
-jacocoTestCoverageVerification.dependsOn(jacocoTestReport)
-
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                counter = 'METHOD'
-                value = 'COVEREDRATIO'
-                minimum = 0.9
-            }
-        }
-
-        rule {
-            limit {
-                counter = 'CLASS'
-                value = 'COVEREDRATIO'
-                minimum = 1
-            }
-        }
-    }
-}

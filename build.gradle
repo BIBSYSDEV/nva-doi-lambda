@@ -25,9 +25,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 
-//    shadowJar { zip64 true
-//        archiveFileName = "nva-doi-lambda-1.0-SNAPSHOT.jar"
-//    }
 }
 
 
@@ -35,6 +32,17 @@ test {
     failFast = true
     finalizedBy jacocoTestReport
 }
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+build.dependsOn buildZip
+
 
 // We don't want a jar, just a fatJar
 //jar.enabled = false

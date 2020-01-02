@@ -45,6 +45,7 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
 
     @Override
     public Object handleRequest(String url, Context context) {
+        System.out.println("Incoming url:" + url);
         if (context != null && context.getLogger() != null) {
             LambdaLogger logger = context.getLogger();
             logger.log("Incoming url:" + url);

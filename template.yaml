@@ -33,8 +33,6 @@ Resources:
           MyCognitoAuthorizer:
             UserPoolArn: !Ref CognitoAuthorizerArn
 
-      Models:
-
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -51,7 +49,6 @@ Resources:
             RestApiId: !Ref NvaDoiFunctionApi
             RequestParameters:
             - method.request.querystring.url
-                Required: True
 
   NvaDoiFunctionBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

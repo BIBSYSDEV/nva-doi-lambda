@@ -10,6 +10,6 @@ public class SimpleEchoRequestHandler  implements RequestHandler<Map<String, Obj
     @Override
     public SimpleResponse handleRequest(Map<String, Object> input, Context context) {
         System.out.println("input: "+input);
-        return new SimpleResponse(input.toString());
+        return new SimpleResponse(input.toString(), 200);
     }
 }

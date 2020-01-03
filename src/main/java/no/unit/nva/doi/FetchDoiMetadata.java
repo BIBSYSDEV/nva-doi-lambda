@@ -53,38 +53,32 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Sim
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
         logger.log("Incoming url:" + url+"\n");
-        Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
+//        Map<String, String> headers = new ConcurrentHashMap<>();
+//        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+//        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
         String json;
-        Response.Status statusCode;
+        int statusCode;
         if (url == null) {
-            statusCode = Response.Status.BAD_REQUEST;
+            statusCode = Response.Status.BAD_REQUEST.getStatusCode();
             json = getErrorAsJson(URL_IS_NULL);
         } else {
             try {
                 String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
                 final String uri = new URI(decodedUrl).toURL().toString();
                 json = this.getDoiMetadataInJson(uri);
-                statusCode = Response.Status.OK;
+                statusCode = Response.Status.OK.getStatusCode();
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
                 logger.log(e.getMessage());
-                statusCode = Response.Status.BAD_REQUEST;
+                statusCode = Response.Status.BAD_REQUEST.getStatusCode();
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
                 logger.log(e.getMessage());
-                statusCode = Response.Status.SERVICE_UNAVAILABLE;
+                statusCode = Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
                 json = getErrorAsJson(e.getMessage());
             }
         }
-//        return new GatewayResponse(json, headers, statusCode);
-        logger.log(json);
-
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//
-//        Type type = new TypeToken<Map<String, Object>>() {
-//        }.getType();
-        return new SimpleResponse(json);
+        logger.log("json: "+json+", statusCode:"+statusCode);
+        return new SimpleResponse(json, statusCode);
     }
 
     /**

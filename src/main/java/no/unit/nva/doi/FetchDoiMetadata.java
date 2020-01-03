@@ -74,6 +74,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Str
             }
         }
 //        return new GatewayResponse(json, headers, statusCode);
+        logger.log(json);
         return json;
     }
 

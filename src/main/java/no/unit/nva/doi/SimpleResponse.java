@@ -2,9 +2,8 @@ package no.unit.nva.doi;
 
 public class SimpleResponse {
 
-    private String body;
-    private String statusCode;
-
+    String body;
+    String statusCode;
 
     public SimpleResponse(String payload, String statusCode) {
         this.body = payload;
@@ -17,5 +16,13 @@ public class SimpleResponse {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
     }
 }

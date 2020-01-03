@@ -90,8 +90,9 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Str
     protected String getDoiMetadataInJson(String doi) throws URISyntaxException, IOException {
         final String doiPath = new URI(doi).getPath();
         String json = dataciteConnection.connect(doiPath);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(json);
+        return json;
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        return gson.toJson(json);
     }
 
     /**

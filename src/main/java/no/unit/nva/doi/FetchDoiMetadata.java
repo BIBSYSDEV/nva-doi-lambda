@@ -45,7 +45,8 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Obj
 
     @Override
     public Object handleRequest(Map<String, Object> input, Context context) {
-        String url = (String) input.get("'queryStringParameters");
+        Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
+        String url = (String) queryStringParameters.get("url");
         System.out.println("Incoming url:" + url);
         if (context != null && context.getLogger() != null) {
             LambdaLogger logger = context.getLogger();

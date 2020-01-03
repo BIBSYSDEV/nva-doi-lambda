@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, JsonElement> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map<String,Object>> {
 
     private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
@@ -45,7 +47,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Jso
     }
 
     @Override
-    public JsonElement handleRequest(Map<String, Object> input, Context context) {
+    public Map<String,Object> handleRequest(Map<String, Object> input, Context context) {
         LambdaLogger logger = context.getLogger();
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
@@ -78,7 +80,10 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Jso
         logger.log(json);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJsonTree(json);
+
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
+        return gson.fromJson(json,type);
     }
 
     /**

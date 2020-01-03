@@ -68,7 +68,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Sim
                 json = this.getDoiMetadataInJson(uri);
                 statusCode = Response.Status.OK.getStatusCode();
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-                logger.log(e.getMessage());
+                logger.log(e.toString());
                 statusCode = Response.Status.BAD_REQUEST.getStatusCode();
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
@@ -78,7 +78,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Sim
             }
         }
         logger.log("json: "+json+", statusCode:"+statusCode);
-        return new SimpleResponse(json, statusCode);
+        return new SimpleResponse(json, ""+statusCode);
     }
 
     /**

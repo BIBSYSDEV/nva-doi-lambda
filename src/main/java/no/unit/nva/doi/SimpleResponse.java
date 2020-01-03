@@ -1,14 +1,12 @@
 package no.unit.nva.doi;
 
-import javax.ws.rs.core.Response;
-
 public class SimpleResponse {
 
     private String body;
-    private int statusCode;
+    private String statusCode;
 
 
-    public SimpleResponse(String payload, int statusCode) {
+    public SimpleResponse(String payload, String statusCode) {
         this.body = payload;
         this.statusCode = statusCode;
     }

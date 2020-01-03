@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<String, Object> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
@@ -44,7 +44,8 @@ public class FetchDoiMetadata implements RequestHandler<String, Object> {
     }
 
     @Override
-    public Object handleRequest(String url, Context context) {
+    public Object handleRequest(Map<String, Object> input, Context context) {
+        String url = (String) input.get("'queryStringParameters");
         System.out.println("Incoming url:" + url);
         if (context != null && context.getLogger() != null) {
             LambdaLogger logger = context.getLogger();

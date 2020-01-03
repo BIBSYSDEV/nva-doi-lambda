@@ -5,11 +5,11 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import java.util.Map;
 
-public class SimpleEchoRequestHandler  implements RequestHandler<Map<String, Object>, Object> {
+public class SimpleEchoRequestHandler  implements RequestHandler<Map<String, Object>, SimpleResponse> {
 
     @Override
-    public Object handleRequest(Map<String, Object> input, Context context) {
+    public SimpleResponse handleRequest(Map<String, Object> input, Context context) {
         System.out.println("input: "+input);
-        return null;
+        return new SimpleResponse(input.toString());
     }
 }

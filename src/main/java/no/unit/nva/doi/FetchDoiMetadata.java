@@ -28,15 +28,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map<String,Object>> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, SimpleResponse> {
 
-    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
+//    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
     public static final String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
     public static final String ERROR_KEY = "error";
     /** Connection object handling the direct communication via http for (mock)-testing to be injected */
     protected transient DataciteConnection dataciteConnection;
+    private LambdaLogger logger;
 
     public FetchDoiMetadata() {
         dataciteConnection = new DataciteConnection();
@@ -47,11 +48,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map
     }
 
     @Override
-    public Map<String,Object> handleRequest(Map<String, Object> input, Context context) {
-        LambdaLogger logger = context.getLogger();
+    public SimpleResponse handleRequest(Map<String, Object> input, Context context) {
+        logger = context.getLogger();
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
-        logger.log("Incoming url:" + url);
+        logger.log("Incoming url:" + url+"\n");
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
@@ -67,11 +68,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map
                 json = this.getDoiMetadataInJson(uri);
                 statusCode = Response.Status.OK;
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-                FetchDoiMetadata.logger.warn(e.getMessage(), e);
+                logger.log(e.getMessage());
                 statusCode = Response.Status.BAD_REQUEST;
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
-                FetchDoiMetadata.logger.error(e.getMessage(), e);
+                logger.log(e.getMessage());
                 statusCode = Response.Status.SERVICE_UNAVAILABLE;
                 json = getErrorAsJson(e.getMessage());
             }
@@ -79,11 +80,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map
 //        return new GatewayResponse(json, headers, statusCode);
         logger.log(json);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        return gson.fromJson(json,type);
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//
+//        Type type = new TypeToken<Map<String, Object>>() {
+//        }.getType();
+        return new SimpleResponse(json);
     }
 
     /**
@@ -96,8 +97,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Map
      * @throws URISyntaxException if the URI has wrong syntax
      */
     protected String getDoiMetadataInJson(String doi) throws URISyntaxException, IOException {
+        System.out.println("getDoiMetadataInJson(doi:"+doi+")");
+
         final String doiPath = new URI(doi).getPath();
         String json = dataciteConnection.connect(doiPath);
+        System.out.println("json:"+json);
         return json;
     }
 

@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Object> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, JsonElement> {
 
     private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
@@ -44,7 +45,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Obj
     }
 
     @Override
-    public Object handleRequest(Map<String, Object> input, Context context) {
+    public JsonElement handleRequest(Map<String, Object> input, Context context) {
         LambdaLogger logger = context.getLogger();
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
@@ -75,7 +76,9 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Obj
         }
 //        return new GatewayResponse(json, headers, statusCode);
         logger.log(json);
-        return json;
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJsonTree(json);
     }
 
     /**
@@ -91,8 +94,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Obj
         final String doiPath = new URI(doi).getPath();
         String json = dataciteConnection.connect(doiPath);
         return json;
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//        return gson.toJson(json);
     }
 
     /**

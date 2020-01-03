@@ -2,6 +2,7 @@ package no.unit.nva.doi;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class FetchDoiMetadataTest {
 
         Map<String, Object> event = new HashMap<String, Object>();
         event.put("queryStringParameters","{url=https://doi.org/10.1093/afraf/ady029}");
-        String result = (String) fetchDoiMetadata.handleRequest(event, null);
+        JsonElement result =  fetchDoiMetadata.handleRequest(event, null);
 //        assertEquals(Response.Status.OK, result.getStatus());
 //        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
 //        String content = result.getBody();
@@ -67,7 +68,7 @@ public class FetchDoiMetadataTest {
 //    @Test
     public void testUrlIsNull() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
-        String result = (String) fetchDoiMetadata.handleRequest(null, null);
+        JsonElement result =  fetchDoiMetadata.handleRequest(null, null);
         assertNotNull(result);
 //        assertEquals(fetchDoiMetadata.getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
     }
@@ -83,7 +84,7 @@ public class FetchDoiMetadataTest {
         when(mockDataciteConnection.communicateWith(any())).thenThrow(new IOException(mockErrorMessage));
         when(fetchDoiMetadata.handleRequest(event, null)).thenCallRealMethod();
 
-        String result = (String) fetchDoiMetadata.handleRequest(event, null);
+        JsonElement result =  fetchDoiMetadata.handleRequest(event, null);
         assertNotNull(result);
     }
 

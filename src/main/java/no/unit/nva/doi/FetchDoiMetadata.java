@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, String> {
 
     private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
@@ -44,14 +44,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     }
 
     @Override
-    public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
+    public String handleRequest(Map<String, Object> input, Context context) {
+        LambdaLogger logger = context.getLogger();
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
-        System.out.println("Incoming url:" + url);
-        if (context != null && context.getLogger() != null) {
-            LambdaLogger logger = context.getLogger();
-            logger.log("Incoming url:" + url);
-        }
+        logger.log("Incoming url:" + url);
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
@@ -76,7 +73,8 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
                 json = getErrorAsJson(e.getMessage());
             }
         }
-        return new GatewayResponse(json, headers, statusCode);
+//        return new GatewayResponse(json, headers, statusCode);
+        return json;
     }
 
     /**

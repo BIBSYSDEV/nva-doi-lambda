@@ -49,43 +49,73 @@ public class FetchDoiMetadataTest {
         MockitoAnnotations.initMocks(this);
     }
 
-//    @Test
+    @Test
     public void successfulResponse() throws Exception {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         when(mockDataciteConnection.connect(anyString())).thenReturn(anyString());
         String url = "https://doi.org/10.1093/afraf/ady029";
 
         Map<String, Object> event = new HashMap<String, Object>();
-        event.put("queryStringParameters","{url=https://doi.org/10.1093/afraf/ady029}");
-        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
-//        assertEquals(Response.Status.OK, result.getStatus());
-//        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
-//        String content = result.getBody();
-        assertNotNull(result);
+
+        Map<String,String> queryStringParameters = new HashMap<>();
+        queryStringParameters.put("url", url);
+        event.put("queryStringParameters", queryStringParameters);
+
+
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(event, null);
+
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+    }
+
+    @Test
+    public void testIncorrectSchemeUrl() {
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
+        String url = "htps://doi.org/10.1093/afraf/ady029";
+        Map<String, Object> event = new HashMap<String, Object>();
+        Map<String,String> queryStringParameters = new HashMap<>();
+        queryStringParameters.put("url", url);
+        event.put("queryStringParameters", queryStringParameters);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        String expectedUnknownProtocolErrorText = "unknown protocol: htps";
+        assertEquals(fetchDoiMetadata.getErrorAsJson(expectedUnknownProtocolErrorText), content);
     }
 
 
-//    @Test
+    @Test
     public void testUrlIsNull() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
-        GatewayResponse result = fetchDoiMetadata.handleRequest(null, null);
-        assertNotNull(result);
-//        assertEquals(fetchDoiMetadata.getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(null, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals(fetchDoiMetadata.getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
     }
 
-//    @Test
+    @Test
     public void testCommunicationIssuesOnCallingHandler() throws Exception {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         String url = "https://doi.org/10.1093/afraf/ady029";
-        String mockErrorMessage = "The test told me to fail";
         Map<String, Object> event = new HashMap<String, Object>();
-        event.put("queryStringParameters","{url=https://doi.org/10.1093/afraf/ady029}");
-
+        Map<String,String> queryStringParameters = new HashMap<>();
+        queryStringParameters.put("url", url);
+        event.put("queryStringParameters", queryStringParameters);
+        String mockErrorMessage = "The test told me to fail";
         when(mockDataciteConnection.communicateWith(any())).thenThrow(new IOException(mockErrorMessage));
         when(fetchDoiMetadata.handleRequest(event, null)).thenCallRealMethod();
-
-        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
-        assertNotNull(result);
+        GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(event, null);
+        assertEquals(Response.Status.SERVICE_UNAVAILABLE.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals(fetchDoiMetadata.getErrorAsJson(mockErrorMessage), content);
     }
 
     @Test

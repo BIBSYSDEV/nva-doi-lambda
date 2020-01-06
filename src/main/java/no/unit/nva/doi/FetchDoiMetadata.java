@@ -41,8 +41,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
     /** Connection object handling the direct communication via http for (mock)-testing to be injected */
     protected transient DataciteConnection dataciteConnection;
-    private LambdaLogger logger;
-
     public FetchDoiMetadata() {
         dataciteConnection = new DataciteConnection();
     }
@@ -51,12 +49,25 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         this.dataciteConnection = dataciteConnection;
     }
 
+
     @Override
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
-        logger = context.getLogger();
-        Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
-        String url = (String) queryStringParameters.get("url");
-        logger.log("Incoming url:" + url+"\n");
+        LambdaLogger logger = null;
+
+        if (context != null && context.getLogger() != null) {
+            logger = context.getLogger();
+        }
+
+
+
+        String url = null;
+        if (input != null && input.containsKey("queryStringParameters")) {
+            Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
+            url = (String) queryStringParameters.get("url");
+        }
+        if (logger != null) {
+            logger.log("Incoming url:" + url+"\n");
+        }
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
@@ -74,16 +85,22 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
                 json = this.getDoiMetadataInJson(uri);
                 statusCode = Response.Status.OK.getStatusCode();
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-                logger.log(e.toString());
+                if (logger != null) {
+                    logger.log(e.toString());
+                }
                 statusCode = Response.Status.BAD_REQUEST.getStatusCode();
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
-                logger.log(e.getMessage());
+                if (logger != null) {
+                    logger.log(e.getMessage());
+                }
                 statusCode = Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
                 json = getErrorAsJson(e.getMessage());
             }
         }
-        logger.log("json: "+json+", statusCode:"+statusCode);
+        if (logger != null) {
+            logger.log("json: " + json + ", statusCode:" + statusCode);
+        }
         return new GatewayResponse(json, headers, statusCode);
     }
 
@@ -101,7 +118,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         final String doiPath = new URI(doi).getPath();
         String json = dataciteConnection.connect(doiPath);
-        System.out.println("json:"+json);
         return json;
     }
 

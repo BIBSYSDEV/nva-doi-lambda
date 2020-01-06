@@ -34,7 +34,7 @@ Resources:
             UserPoolArn: !Ref CognitoAuthorizerArn
       Cors:
         AllowCredentials: true
-#        AllowOrigin: "'http://localhost:3000'"
+        AllowOrigin: "'http://localhost:3000'"
 #        AllowHeaders: "'Authorization'"
         AllowMethods: "'OPTIONS, GET'"
 

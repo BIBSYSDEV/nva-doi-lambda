@@ -3,20 +3,13 @@ package no.unit.nva.doi;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-//    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
     public static final String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
@@ -39,8 +32,11 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
     public static final String ERROR_KEY = "error";
 
-    /** Connection object handling the direct communication via http for (mock)-testing to be injected */
+    /**
+     * Connection object handling the direct communication via http for (mock)-testing to be injected.
+     */
     protected transient DataciteConnection dataciteConnection;
+
     public FetchDoiMetadata() {
         dataciteConnection = new DataciteConnection();
     }
@@ -51,6 +47,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
 
     @Override
+    @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
         LambdaLogger logger = null;
 
@@ -59,14 +56,13 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         }
 
 
-
         String url = null;
         if (input != null && input.containsKey("queryStringParameters")) {
             Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
-            url = (String) queryStringParameters.get("url");
+            url = queryStringParameters.get("url");
         }
         if (logger != null) {
-            logger.log("Incoming url:" + url+"\n");
+            logger.log("Incoming url:" + url + "\n");
         }
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
@@ -110,15 +106,14 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
      *
      * @param doi String representing a doi-url
      * @return a json containing metadata to the publication given by its doi
-     * @throws IOException if connection fails
+     * @throws IOException        if connection fails
      * @throws URISyntaxException if the URI has wrong syntax
      */
     protected String getDoiMetadataInJson(String doi) throws URISyntaxException, IOException {
-        System.out.println("getDoiMetadataInJson(doi:"+doi+")");
+        System.out.println("getDoiMetadataInJson(doi:" + doi + ")");
 
         final String doiPath = new URI(doi).getPath();
-        String json = dataciteConnection.connect(doiPath);
-        return json;
+        return dataciteConnection.connect(doiPath);
     }
 
     /**

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class DataciteConnection {
 
     /** Datacite's URL to access json-formatted metadata.  */
-    private final static transient String dataciteURL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
+    private static final transient String dataciteURL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
 
     /**
      * Connect to datacite with given doi-url and returning the response as String.

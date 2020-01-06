@@ -1,6 +1,5 @@
 package no.unit.nva.doi;
 
-import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +9,9 @@ import java.util.Map;
  */
 public class GatewayResponse {
 
-     final String body;
-     final Map<String, String> headers;
-     final int  statusCode;
+    final String body;
+    final Map<String, String> headers;
+    final int statusCode;
 
     public GatewayResponse(final String body, final Map<String, String> headers, final int statusCode) {
         this.statusCode = statusCode;

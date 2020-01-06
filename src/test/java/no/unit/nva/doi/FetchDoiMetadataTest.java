@@ -51,17 +51,14 @@ public class FetchDoiMetadataTest {
 
     @Test
     public void successfulResponse() throws Exception {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         when(mockDataciteConnection.connect(anyString())).thenReturn(anyString());
         String url = "https://doi.org/10.1093/afraf/ady029";
-
         Map<String, Object> event = new HashMap<String, Object>();
-
         Map<String,String> queryStringParameters = new HashMap<>();
         queryStringParameters.put("url", url);
         event.put("queryStringParameters", queryStringParameters);
 
-
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(event, null);
 
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -101,13 +98,13 @@ public class FetchDoiMetadataTest {
 
     @Test
     public void testCommunicationIssuesOnCallingHandler() throws Exception {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         String url = "https://doi.org/10.1093/afraf/ady029";
         Map<String, Object> event = new HashMap<String, Object>();
         Map<String,String> queryStringParameters = new HashMap<>();
         queryStringParameters.put("url", url);
         event.put("queryStringParameters", queryStringParameters);
         String mockErrorMessage = "The test told me to fail";
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
         when(mockDataciteConnection.communicateWith(any())).thenThrow(new IOException(mockErrorMessage));
         when(fetchDoiMetadata.handleRequest(event, null)).thenCallRealMethod();
         GatewayResponse result = (GatewayResponse) fetchDoiMetadata.handleRequest(event, null);

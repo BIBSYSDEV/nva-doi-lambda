@@ -10,12 +10,12 @@ import java.util.Map;
  */
 public class GatewayResponse {
 
-    private final String body;
-    private final Map<String, String> headers;
-    private final Response.Status status;
+     final String body;
+     final Map<String, String> headers;
+     final int  statusCode;
 
-    public GatewayResponse(final String body, final Map<String, String> headers, final Response.Status status) {
-        this.status = status;
+    public GatewayResponse(final String body, final Map<String, String> headers, final int statusCode) {
+        this.statusCode = statusCode;
         this.body = body;
         this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
     }
@@ -28,7 +28,7 @@ public class GatewayResponse {
         return headers;
     }
 
-    public Response.Status getStatus() {
-        return status;
+    public int getStatusCode() {
+        return statusCode;
     }
 }

@@ -28,13 +28,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, SimpleResponse> {
+public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
 //    private static final Logger logger = LoggerFactory.getLogger(FetchDoiMetadata.class);
 
     public static final String X_CUSTOM_HEADER = "X-Custom-Header";
+    public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
+    public static final String CORS_ORIGIN_HEADER_HOSTS = "http://localhost:8080";
+
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
     public static final String ERROR_KEY = "error";
+
     /** Connection object handling the direct communication via http for (mock)-testing to be injected */
     protected transient DataciteConnection dataciteConnection;
     private LambdaLogger logger;
@@ -48,14 +52,16 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Sim
     }
 
     @Override
-    public SimpleResponse handleRequest(Map<String, Object> input, Context context) {
+    public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
         logger = context.getLogger();
         Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
         String url = (String) queryStringParameters.get("url");
         logger.log("Incoming url:" + url+"\n");
-//        Map<String, String> headers = new ConcurrentHashMap<>();
-//        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-//        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
+        Map<String, String> headers = new ConcurrentHashMap<>();
+        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
+        headers.put(CORS_ALLOW_ORIGIN_HEADER, CORS_ORIGIN_HEADER_HOSTS);
+
         String json;
         int statusCode;
         if (url == null) {
@@ -78,7 +84,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Sim
             }
         }
         logger.log("json: "+json+", statusCode:"+statusCode);
-        return new SimpleResponse(json, ""+statusCode);
+        return new GatewayResponse(json, headers, statusCode);
     }
 
     /**

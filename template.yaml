@@ -28,10 +28,15 @@ Resources:
     Properties:
       StageName: Prod
       Auth:
-        DefaultAuthorizer: MyCognitoAuthorizer
+#        DefaultAuthorizer: MyCognitoAuthorizer
         Authorizers:
           MyCognitoAuthorizer:
             UserPoolArn: !Ref CognitoAuthorizerArn
+      Cors:
+        AllowCredentials: true
+#        AllowOrigin: "'http://localhost:3000'"
+#        AllowHeaders: "'Authorization'"
+        AllowMethods: "'OPTIONS, GET'"
 
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -44,6 +49,8 @@ Resources:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
             Path: /
             Method: get
             RestApiId: !Ref NvaDoiFunctionApi

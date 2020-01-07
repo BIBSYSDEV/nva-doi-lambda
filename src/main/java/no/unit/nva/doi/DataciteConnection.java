@@ -15,16 +15,11 @@ public class DataciteConnection {
      */
     private static final String DATACITE_URL
             = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
-    public static final String MALFORMED_URL_ERROR_TEMPLATE = "The url %s was malformed";
     public static final String UNREACHBLE_URL_ERROR_TEMPLATE = "The URL %s was unreachable";
 
-    protected URL createUrl(String doiPath) throws DataciteConnectionError {
+    protected URL createUrl(String doiPath) throws MalformedURLException {
         String url = DATACITE_URL + doiPath;
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new DataciteConnectionError(String.format(MALFORMED_URL_ERROR_TEMPLATE, url));
-        }
+        return new URL(url);
     }
 
     /**

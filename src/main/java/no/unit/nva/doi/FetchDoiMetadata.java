@@ -3,6 +3,8 @@ package no.unit.nva.doi;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -17,6 +19,9 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * Handler for requests to Lambda function.
@@ -36,6 +41,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
      */
     protected transient DataciteConnection dataciteConnection;
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public FetchDoiMetadata() {
         dataciteConnection = new DataciteConnection();
@@ -68,34 +74,35 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         headers.put(CORS_ALLOW_ORIGIN_HEADER, CORS_ORIGIN_HEADER_HOSTS);
 
         String json;
-        int statusCode;
-        if (url == null) {
-            statusCode = Response.Status.BAD_REQUEST.getStatusCode();
+
+        Response.Status statusCode;
+        if (isNull(url)) {
+            statusCode = Response.Status.BAD_REQUEST;
             json = getErrorAsJson(URL_IS_NULL);
         } else {
             try {
                 String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
                 final String uri = new URI(decodedUrl).toURL().toString();
                 json = this.getDoiMetadataInJson(uri);
-                statusCode = Response.Status.OK.getStatusCode();
+                statusCode = Response.Status.OK;
             } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-                if (logger != null) {
+                if (nonNull(logger)) {
                     logger.log(e.toString());
                 }
-                statusCode = Response.Status.BAD_REQUEST.getStatusCode();
+                statusCode = Response.Status.BAD_REQUEST;
                 json = getErrorAsJson(e.getMessage());
             } catch (IOException e) {
-                if (logger != null) {
+                if (nonNull(logger)) {
                     logger.log(e.getMessage());
                 }
-                statusCode = Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
+                statusCode = Response.Status.SERVICE_UNAVAILABLE;
                 json = getErrorAsJson(e.getMessage());
             }
         }
-        if (logger != null) {
-            logger.log("json: " + json + ", statusCode:" + statusCode);
+        if (nonNull(logger)) {
+            logger.log("json: " + json + ", statusCode:" + statusCode.getStatusCode());
         }
-        return new GatewayResponse(json, headers, statusCode);
+        return new GatewayResponse(json, headers, statusCode.getStatusCode());
     }
 
     /**
@@ -111,7 +118,8 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         System.out.println("getDoiMetadataInJson(doi:" + doi + ")");
 
         final String doiPath = new URI(doi).getPath();
-        return dataciteConnection.connect(doiPath);
+        String json = dataciteConnection.connect(doiPath);
+        return GSON.toJson(json);
     }
 
     /**

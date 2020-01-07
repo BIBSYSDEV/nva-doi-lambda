@@ -61,9 +61,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
             url = queryStringParameters.get("url");
         }
-        if (logger != null) {
-            logger.log("Incoming url:" + url + "\n");
-        }
+
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);

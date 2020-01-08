@@ -15,16 +15,42 @@ public class DataciteConnection {
      */
     private static final String DATACITE_URL
             = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
-    protected URL url;
+    /**
+     * The url the connection should be established to.
+     */
+    private URL url;
 
     public DataciteConnection() {
     }
 
+    /**
+     * As parameter send in the url the connection should be established to.
+     * @param url url
+     */
     public DataciteConnection(URL url) {
         this.url = url;
     }
 
-    protected void createUrl(String doiPath) throws MalformedURLException {
+    /**
+     * Sets the url to connect to.
+     * @param url url
+     */
+    protected void setUrl(URL url) {
+        this.url = url;
+    }
+
+    /**
+     * Get the url the connection should be established to.
+     */
+    protected URL getUrl() {
+        return this.url;
+    }
+
+    /**
+     * Sets an url pointing to datacite and appends the parameter doiPath.
+     * @param doiPath doi-url
+     */
+    protected void setDataciteURL(String doiPath) throws MalformedURLException {
         String url = DATACITE_URL + doiPath;
         this.url =  new URL(url);
     }
@@ -38,12 +64,11 @@ public class DataciteConnection {
      */
     protected String connect(String doiPath) throws IOException {
         String contents;
-        createUrl(doiPath);
+        setDataciteURL(doiPath);
         URLConnection urlConnection = url.openConnection();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
             contents = in.lines().collect(Collectors.joining());
         }
         return contents;
     }
-
 }

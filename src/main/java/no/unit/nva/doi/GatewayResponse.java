@@ -13,6 +13,12 @@ public class GatewayResponse {
     private final  Map<String, String> headers;
     private final int statusCode;
 
+    /**
+     * Convenience constructor to set all fields at once.
+     * @param body response body
+     * @param headers response headers
+     * @param statusCode response Status Code
+     */
     public GatewayResponse(final String body, final Map<String, String> headers, final int statusCode) {
         this.statusCode = statusCode;
         this.body = body;

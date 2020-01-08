@@ -1,33 +1,29 @@
 package no.unit.nva.doi;
 
-import com.google.gson.Gson;
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.net.URLConnection;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ URL.class, DataciteConnection.class })
 public class DataciteConnectionTest {
 
     public static final String MOCK_URL = "http://example.org/123";
-    private static final String FAKE_DATACITE_URL = "http://example.org/10000";
     private static final String NONSENSE_DOI = "htp://www.example.org/:)";
-    private static final String DATACITE_RESPONSE_JSON = "dataciteResponse.json";
-    public static final String PATH_SEPARATOR = "/";
     public static final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
-    public static final String ERROR_TEMPLATE = "The URL %s was unreachable";
+    public static final String MOCK_BODY = "Svenn";
 
     @Test
     public void test_exists() {
@@ -35,11 +31,17 @@ public class DataciteConnectionTest {
     }
 
     @Test
-    public void test_connect_throws_IoException() {
+    public void test_createUrl() throws MalformedURLException {
+        URL url = new URL(DATACITE_URL + MOCK_URL);
+        final DataciteConnection dataciteConnection = new DataciteConnection(url);
+        dataciteConnection.createUrl(MOCK_URL);
+        assertEquals(url, dataciteConnection.url);
+    }
+
+    @Test
+    public void test_connect_throws_IOException() {
         DataciteConnection dataciteConnection = new DataciteConnection();
-
-        String expectedError = String.format(ERROR_TEMPLATE, DATACITE_URL + NONSENSE_DOI);
-
+        String expectedError = DATACITE_URL + NONSENSE_DOI;
         try {
             dataciteConnection.connect(NONSENSE_DOI);
             fail();
@@ -49,32 +51,16 @@ public class DataciteConnectionTest {
     }
 
     @Test
-    public void test_connect() throws IOException {
-        DataciteConnection dataciteConnection = new DataciteConnection();
-        DataciteConnection spiedDataciteConnection = spy(dataciteConnection);
-        URL mockUrl = new URL(MOCK_URL);
-        doReturn(mockUrl).when(spiedDataciteConnection).createUrl(anyString());
-        try (
-                InputStream inputStream = Objects.requireNonNull(this.getClass().getClassLoader()
-                        .getResourceAsStream(DATACITE_RESPONSE_JSON))
-        ) {
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            doReturn(inputStreamReader)
-                    .when(spiedDataciteConnection).communicateWith(mockUrl);
-
-            String data = spiedDataciteConnection.connect(FAKE_DATACITE_URL);
-            assertNotNull(data);
-            String originalDataFromFile = IOUtils.resourceToString(PATH_SEPARATOR + DATACITE_RESPONSE_JSON,
-                    StandardCharsets.UTF_8);
-            assertTrue(compareJson(originalDataFromFile, data));
-        }
+    public void test_successful_connect() throws Exception {
+        URLConnection conn = PowerMockito.mock(URLConnection.class);
+        URL mockUrl = PowerMockito.mock(URL.class);
+        PowerMockito.whenNew(URL.class).withArguments(anyString()).thenReturn(mockUrl);
+        DataciteConnection dataciteConnection = new DataciteConnection(mockUrl);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(MOCK_BODY.getBytes());
+        PowerMockito.when(mockUrl.openConnection()).thenReturn(conn);
+        PowerMockito.when(conn.getInputStream()).thenReturn(inputStream);
+        String content = dataciteConnection.connect(MOCK_URL);
+        assertEquals(MOCK_BODY, content);
     }
 
-    private boolean compareJson(String expected, String input) {
-        Gson gson = new Gson();
-        Object object1 = gson.fromJson(expected, Object.class);
-        Object object2 = gson.fromJson(input, Object.class);
-
-        return object1.equals(object2);
-    }
 }

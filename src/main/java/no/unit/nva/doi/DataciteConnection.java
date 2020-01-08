@@ -15,11 +15,18 @@ public class DataciteConnection {
      */
     private static final String DATACITE_URL
             = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
-    public static final String UNREACHBLE_URL_ERROR_TEMPLATE = "The URL %s was unreachable";
+    protected URL url;
 
-    protected URL createUrl(String doiPath) throws MalformedURLException {
+    public DataciteConnection() {
+    }
+
+    public DataciteConnection(URL url) {
+        this.url = url;
+    }
+
+    protected void createUrl(String doiPath) throws MalformedURLException {
         String url = DATACITE_URL + doiPath;
-        return new URL(url);
+        this.url =  new URL(url);
     }
 
     /**
@@ -31,28 +38,12 @@ public class DataciteConnection {
      */
     protected String connect(String doiPath) throws IOException {
         String contents;
-        URL url = createUrl(doiPath);
-        InputStreamReader inputStreamReader = this.communicateWith(url);
-
-        try (BufferedReader in = new BufferedReader(inputStreamReader)) {
+        createUrl(doiPath);
+        URLConnection urlConnection = url.openConnection();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
             contents = in.lines().collect(Collectors.joining());
         }
         return contents;
     }
 
-    /**
-     * Make actual the contact with the url.
-     *
-     * @param url destination
-     * @return InputStreamReader carrying the response
-     * @throws IOException something went wrong in communication
-     */
-    protected InputStreamReader communicateWith(URL url) throws IOException {
-        URLConnection connection = url.openConnection();
-        try (InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream())) {
-            return inputStreamReader;
-        } catch (IOException exception) {
-            throw new DataciteConnectionError(String.format(UNREACHBLE_URL_ERROR_TEMPLATE, url));
-        }
-    }
 }

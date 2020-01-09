@@ -27,7 +27,6 @@ import static java.util.Objects.isNull;
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
 
-    public static final String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String CORS_ORIGIN_HEADER_HOSTS = "http://localhost:3000";
 
@@ -62,7 +61,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
         headers.put(CORS_ALLOW_ORIGIN_HEADER, CORS_ORIGIN_HEADER_HOSTS);
 
         String json;

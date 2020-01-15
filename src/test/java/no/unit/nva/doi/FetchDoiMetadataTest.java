@@ -85,7 +85,10 @@ public class FetchDoiMetadataTest {
     @Test
     public void testUrlIsNull() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
-        GatewayResponse result = fetchDoiMetadata.handleRequest(null, null);
+        Map<String, Object> event = new HashMap<>();
+        Map<String, String> queryStringParameters = new HashMap<>();
+        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
+        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();

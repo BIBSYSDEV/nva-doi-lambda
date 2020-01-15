@@ -15,8 +15,8 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import static java.util.Objects.isNull;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handler for requests to Lambda function.
@@ -24,9 +24,9 @@ import static java.util.Objects.isNull;
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
-    public static final String ERROR_KEY = "error";
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String URL_KEY = "url";
+    private static final String EMPTY_STRING = "";
 
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
@@ -49,17 +49,17 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         GatewayResponse gatewayResponse = new GatewayResponse();
 
-        String url = null;
-        if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
-            Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-            url = queryStringParameters.get(URL_KEY);
-        }
-
-        if (isNull(url)) {
+        try {
+            this.checkParameters(input);
+        } catch (RuntimeException e) {
+            gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            gatewayResponse.setErrorBody(URL_IS_NULL);
             return gatewayResponse;
         }
+
+        Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
+        String url = queryStringParameters.get(URL_KEY);
+
         try {
             String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
             final String uri = new URI(decodedUrl).toURL().toString();
@@ -75,6 +75,16 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             System.out.println(e.getMessage());
         }
         return gatewayResponse;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkParameters(Map<String, Object> input) {
+        Map<String, String> queryStringParameters = Optional.ofNullable((Map<String, String>) input
+                .get(QUERY_STRING_PARAMETERS_KEY)).orElse(new ConcurrentHashMap<>());
+        String url = queryStringParameters.getOrDefault(URL_KEY, EMPTY_STRING);
+        if (url.isEmpty()) {
+            throw new RuntimeException(URL_IS_NULL);
+        }
     }
 
     /**

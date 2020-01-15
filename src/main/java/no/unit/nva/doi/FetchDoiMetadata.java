@@ -46,33 +46,35 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
+
+        GatewayResponse gatewayResponse = new GatewayResponse();
+
         String url = null;
         if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
             Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
             url = queryStringParameters.get(URL_KEY);
         }
-        String json;
-        Response.Status statusCode;
+
         if (isNull(url)) {
-            statusCode = Response.Status.BAD_REQUEST;
-            json = getErrorAsJson(URL_IS_NULL);
-            return new GatewayResponse(json, statusCode.getStatusCode());
+            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            gatewayResponse.setErrorBody(URL_IS_NULL);
+            return gatewayResponse;
         }
         try {
             String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
             final String uri = new URI(decodedUrl).toURL().toString();
-            json = this.getDoiMetadataInJson(uri);
-            statusCode = Response.Status.OK;
+            gatewayResponse.setBody(this.getDoiMetadataInJson(uri));
+            gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
         } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-            statusCode = Response.Status.BAD_REQUEST;
-            json = getErrorAsJson(e.getMessage());
+            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
         } catch (IOException e) {
-            statusCode = Response.Status.SERVICE_UNAVAILABLE;
-            json = getErrorAsJson(e.getMessage());
+            gatewayResponse.setStatusCode(Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
+            gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
         }
-        return new GatewayResponse(json, statusCode.getStatusCode());
+        return gatewayResponse;
     }
 
     /**
@@ -88,20 +90,9 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         System.out.println("getDoiMetadataInJson(doi:" + doi + ")");
 
         final String doiPath = new URI(doi).getPath();
-        String json = dataciteConnection.connect(doiPath);
-        return GSON.toJson(json);
-    }
-
-    /**
-     * Get error message as a json string.
-     *
-     * @param message message from exception
-     * @return String containing an error message as json
-     */
-    protected String getErrorAsJson(String message) {
-        JsonObject json = new JsonObject();
-        json.addProperty(ERROR_KEY, message);
-        return json.toString();
+        String jsonString = dataciteConnection.connect(doiPath);
+        JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
+        return GSON.toJson(jsonObject);
     }
 
 }

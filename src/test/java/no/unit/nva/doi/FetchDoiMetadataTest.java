@@ -1,5 +1,6 @@
 package no.unit.nva.doi;
 
+import com.google.gson.JsonObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +35,7 @@ public class FetchDoiMetadataTest {
     public static final String INVALID_DOI = "https://doi.org/lets^Go^Wild";
     public static final String ERROR_JSON = "{\"error\":\"error\"}";
     public static final String ERROR = "error";
+    public static final String ERROR_KEY = "error";
     public static final String DOI_URL = "https://doi.org/10.1093/afraf/ady029";
     public static final String WRONG_QUERY_STRING_PARAMETERS_KEY = "wrongQueryStringParameters";
     @Rule
@@ -77,18 +79,21 @@ public class FetchDoiMetadataTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertEquals(fetchDoiMetadata.getErrorAsJson(UNKNOWN_PROTOCOL_HTPS), content);
+        assertEquals(getErrorAsJson(UNKNOWN_PROTOCOL_HTPS), content);
     }
 
     @Test
     public void testUrlIsNull() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
-        GatewayResponse result = fetchDoiMetadata.handleRequest(null, null);
+        Map<String, Object> event = new HashMap<>();
+        Map<String, String> queryStringParameters = new HashMap<>();
+        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
+        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertEquals(fetchDoiMetadata.getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
+        assertEquals(getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
     }
 
     @Test
@@ -103,7 +108,7 @@ public class FetchDoiMetadataTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertEquals(fetchDoiMetadata.getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
+        assertEquals(getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
     }
 
     @Test
@@ -119,7 +124,7 @@ public class FetchDoiMetadataTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertEquals(fetchDoiMetadata.getErrorAsJson(MOCK_ERROR_MESSAGE), content);
+        assertEquals(getErrorAsJson(MOCK_ERROR_MESSAGE), content);
     }
 
     @Test
@@ -140,8 +145,20 @@ public class FetchDoiMetadataTest {
     @Test
     public void testErrorResponse() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
-        String errorJson = fetchDoiMetadata.getErrorAsJson(ERROR);
+        String errorJson = getErrorAsJson(ERROR);
         assertEquals(ERROR_JSON, errorJson);
+    }
+
+    /**
+     * Get error message as a json string.
+     *
+     * @param message message from exception
+     * @return String containing an error message as json
+     */
+    private String getErrorAsJson(String message) {
+        JsonObject json = new JsonObject();
+        json.addProperty(ERROR_KEY, message);
+        return json.toString();
     }
 
 }

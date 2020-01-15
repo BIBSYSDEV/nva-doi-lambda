@@ -6,8 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -17,7 +15,6 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Objects.isNull;
 
@@ -25,10 +22,6 @@ import static java.util.Objects.isNull;
  * Handler for requests to Lambda function.
  */
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
-
-
-    public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
-    public static final String CORS_ORIGIN_HEADER_HOSTS = "http://localhost:3000";
 
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
     public static final String ERROR_KEY = "error";
@@ -58,18 +51,12 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
             url = queryStringParameters.get(URL_KEY);
         }
-
-        Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.put(CORS_ALLOW_ORIGIN_HEADER, CORS_ORIGIN_HEADER_HOSTS);
-
         String json;
-
         Response.Status statusCode;
         if (isNull(url)) {
             statusCode = Response.Status.BAD_REQUEST;
             json = getErrorAsJson(URL_IS_NULL);
-            return new GatewayResponse(json, headers, statusCode.getStatusCode());
+            return new GatewayResponse(json, statusCode.getStatusCode());
         }
         try {
             String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
@@ -85,7 +72,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             json = getErrorAsJson(e.getMessage());
             System.out.println(e.getMessage());
         }
-        return new GatewayResponse(json, headers, statusCode.getStatusCode());
+        return new GatewayResponse(json, statusCode.getStatusCode());
     }
 
     /**

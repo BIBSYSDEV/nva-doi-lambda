@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 public class FetchDoiMetadataTest {
 
     public static final String VALID_DOI = "https://doi.org/10.1093/afraf/ady029";
-    public static final String INVALID_URL_SCHEME = "htps://doi.org/10.1093/afraf/ady029";
-    public static final String UNKNOWN_PROTOCOL_HTPS = "unknown protocol: htps";
     public static final String MOCK_ERROR_MESSAGE = "The test told me to fail";
     public static final String INVALID_DOI = "https://doi.org/lets^Go^Wild";
     public static final String ERROR_JSON = "{\"error\":\"error\"}";
@@ -68,18 +66,18 @@ public class FetchDoiMetadataTest {
     }
 
     @Test
-    public void testIncorrectSchemeUrl() {
+    public void testInvalidDoiUrl() {
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
         Map<String, Object> event = new HashMap<>();
         Map<String, String> queryStringParameters = new HashMap<>();
-        queryStringParameters.put(FetchDoiMetadata.URL_KEY, INVALID_URL_SCHEME);
+        queryStringParameters.put(FetchDoiMetadata.URL_KEY, INVALID_DOI);
         event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertEquals(getErrorAsJson(UNKNOWN_PROTOCOL_HTPS), content);
+        assertEquals(getErrorAsJson(FetchDoiMetadata.INVALID_DOI_URL), content);
     }
 
     @Test

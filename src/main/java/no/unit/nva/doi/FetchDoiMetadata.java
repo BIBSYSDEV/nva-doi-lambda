@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handler for requests to Lambda function.
@@ -24,9 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
+    public static final String INVALID_DOI_URL = "The input parameter 'url' is not a valid DOI";
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String URL_KEY = "url";
     private static final String EMPTY_STRING = "";
+
+    private static final Pattern DOI_URL_PATTERN = Pattern.compile("^https?://(dx\\.)?doi\\.org/"
+            + "(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
@@ -66,7 +72,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             gatewayResponse.setBody(this.getDoiMetadataInJson(uri));
             gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
         } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
         } catch (IOException e) {
@@ -85,6 +91,15 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         if (url.isEmpty()) {
             throw new RuntimeException(URL_IS_NULL);
         }
+        if (!isValidDoi(url)) {
+            throw new RuntimeException(INVALID_DOI_URL);
+        }
+
+    }
+
+    private boolean isValidDoi(String url) {
+        Matcher m = DOI_URL_PATTERN.matcher(url);
+        return m.find();
     }
 
     /**

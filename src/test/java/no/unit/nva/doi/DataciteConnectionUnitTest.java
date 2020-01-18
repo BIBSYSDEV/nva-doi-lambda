@@ -46,7 +46,7 @@ public class DataciteConnectionUnitTest {
     @Test
     public void test_connect_throws_IOException() {
         DataciteConnection dataciteConnection = new DataciteConnection();
-        String expectedError = DATACITE_URL + NONSENSE_DOI;
+        String expectedError = "No subject alternative DNS name matching data.datacite.org found.";
         try {
             dataciteConnection.connect(NONSENSE_DOI);
             fail();

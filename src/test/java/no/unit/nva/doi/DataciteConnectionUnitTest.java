@@ -13,7 +13,7 @@ public class DataciteConnectionUnitTest {
 
     public static final String MOCK_URL = "http://example.org/123";
     private static final String NONSENSE_DOI = "htp://www.example.org/:)";
-    public static final String DATACITE_URL = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
+    public static final String DATACITE_URL = "https://data.crosscite.org/application/vnd.citationstyles.csl+json";
 
     @Test
     public void test_exists() {

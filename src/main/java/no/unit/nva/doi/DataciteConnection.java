@@ -14,7 +14,7 @@ public class DataciteConnection {
      * Datacite's URL to access json-formatted metadata.
      */
     private static final String DATACITE_URL
-            = "https://data.datacite.org/application/vnd.citationstyles.csl+json";
+            = "https://data.crosscite.org/application/vnd.citationstyles.csl+json";
     /**
      * The url the connection should be established to.
      */

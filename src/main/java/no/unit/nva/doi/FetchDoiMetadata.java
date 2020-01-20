@@ -15,10 +15,8 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static java.util.Objects.isNull;
 
 /**
  * Handler for requests to Lambda function.
@@ -26,13 +24,9 @@ import java.util.regex.Pattern;
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String URL_IS_NULL = "The input parameter 'url' is null";
-    public static final String INVALID_DOI_URL = "The input parameter 'url' is not a valid DOI";
+    public static final String ERROR_KEY = "error";
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String URL_KEY = "url";
-    private static final String EMPTY_STRING = "";
-
-    private static final Pattern DOI_URL_PATTERN = Pattern.compile("^https?://(dx\\.)?doi\\.org/"
-            + "(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
@@ -52,54 +46,33 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
-
-        GatewayResponse gatewayResponse = new GatewayResponse();
-
-        try {
-            this.checkParameters(input);
-        } catch (RuntimeException e) {
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            return gatewayResponse;
+        String url = null;
+        if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
+            Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
+            url = queryStringParameters.get(URL_KEY);
         }
-
-        Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-        String url = queryStringParameters.get(URL_KEY);
-
+        String json;
+        Response.Status statusCode;
+        if (isNull(url)) {
+            statusCode = Response.Status.BAD_REQUEST;
+            json = getErrorAsJson(URL_IS_NULL);
+            return new GatewayResponse(json, statusCode.getStatusCode());
+        }
         try {
             String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
             final String uri = new URI(decodedUrl).toURL().toString();
-            gatewayResponse.setBody(this.getDoiMetadataInJson(uri));
-            gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+            json = this.getDoiMetadataInJson(uri);
+            statusCode = Response.Status.OK;
         } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-            gatewayResponse.setErrorBody(e.getMessage());
+            statusCode = Response.Status.BAD_REQUEST;
+            json = getErrorAsJson(e.getMessage());
             System.out.println(e.getMessage());
         } catch (IOException e) {
-            gatewayResponse.setStatusCode(Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
-            gatewayResponse.setErrorBody(e.getMessage());
+            statusCode = Response.Status.SERVICE_UNAVAILABLE;
+            json = getErrorAsJson(e.getMessage());
             System.out.println(e.getMessage());
         }
-        return gatewayResponse;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void checkParameters(Map<String, Object> input) {
-        Map<String, String> queryStringParameters = Optional.ofNullable((Map<String, String>) input
-                .get(QUERY_STRING_PARAMETERS_KEY)).orElse(new ConcurrentHashMap<>());
-        String url = queryStringParameters.getOrDefault(URL_KEY, EMPTY_STRING);
-        if (url.isEmpty()) {
-            throw new RuntimeException(URL_IS_NULL);
-        }
-        if (!isValidDoi(url)) {
-            throw new RuntimeException(INVALID_DOI_URL);
-        }
-
-    }
-
-    private boolean isValidDoi(String url) {
-        Matcher m = DOI_URL_PATTERN.matcher(url);
-        return m.find();
+        return new GatewayResponse(json, statusCode.getStatusCode());
     }
 
     /**
@@ -115,9 +88,20 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         System.out.println("getDoiMetadataInJson(doi:" + doi + ")");
 
         final String doiPath = new URI(doi).getPath();
-        String jsonString = dataciteConnection.connect(doiPath);
-        JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
-        return GSON.toJson(jsonObject);
+        String json = dataciteConnection.connect(doiPath);
+        return GSON.toJson(json);
+    }
+
+    /**
+     * Get error message as a json string.
+     *
+     * @param message message from exception
+     * @return String containing an error message as json
+     */
+    protected String getErrorAsJson(String message) {
+        JsonObject json = new JsonObject();
+        json.addProperty(ERROR_KEY, message);
+        return json.toString();
     }
 
 }

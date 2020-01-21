@@ -57,15 +57,15 @@ Resources:
       Handler: no.unit.nva.doi.FetchDoiMetadata::handleRequest
       Runtime: java8
       MemorySize: 512
+      Environment:
+        Variables:
+          AllowOrigin: !Ref  CorsOrigin
       Events:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
               Authorizer: MyCognitoAuthorizer
-              Environment:
-                Variables:
-                  AllowOrigin: !Ref  CorsOrigin
             Path: /
             Method: get
             RestApiId: !Ref NvaDoiFunctionApi

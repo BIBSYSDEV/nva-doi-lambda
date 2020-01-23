@@ -7,9 +7,6 @@ public class Config {
 
     private String corsHeader;
 
-    private Config() {
-    }
-
     private static class LazyHolder {
 
         private static final Config INSTANCE = new Config();

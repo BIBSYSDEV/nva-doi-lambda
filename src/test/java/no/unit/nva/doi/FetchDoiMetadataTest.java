@@ -1,31 +1,26 @@
 package no.unit.nva.doi;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.MockitoRule;
+import org.mockito.Mockito;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FetchDoiMetadataTest {
 
     public static final String VALID_DOI = "https://doi.org/10.1093/afraf/ady029";
@@ -34,45 +29,43 @@ public class FetchDoiMetadataTest {
     public static final String ERROR_JSON = "{\"error\":\"error\"}";
     public static final String ERROR = "error";
     public static final String ERROR_KEY = "error";
-    public static final String DOI_URL = "https://doi.org/10.1093/afraf/ady029";
-    public static final String WRONG_QUERY_STRING_PARAMETERS_KEY = "wrongQueryStringParameters";
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
+    public static final String DATACITE_RESPONSE = "";
 
-    @Mock
-    DataciteConnection mockDataciteConnection;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Test
     public void successfulResponse() throws Exception {
-        when(mockDataciteConnection.connect(anyString())).thenReturn(anyString());
-        Map<String, Object> event = new HashMap<>();
-        Map<String, String> queryStringParameters = new HashMap<>();
-        queryStringParameters.put(FetchDoiMetadata.URL_KEY, DOI_URL);
-        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
+        DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenReturn(DATACITE_RESPONSE);
+        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
 
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
 
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
     }
 
-    @Test
-    public void testInvalidDoiUrl() {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
+    private Map<String, Object> createEvent(String doiUrlString, DataciteContentType dataciteContentType) throws MalformedURLException {
         Map<String, Object> event = new HashMap<>();
-        Map<String, String> queryStringParameters = new HashMap<>();
-        queryStringParameters.put(FetchDoiMetadata.URL_KEY, INVALID_DOI);
-        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
+        DoiLookup doiLookup = new DoiLookup();
+        doiLookup.setDoiUrl(new URL(doiUrlString));
+        doiLookup.setDataciteContentType(dataciteContentType);
+        event.put("body", gson.toJson(doiLookup));
+        return event;
+    }
+
+    @Test
+    public void testInvalidDoiUrl() throws IOException {
+        DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenReturn(DATACITE_RESPONSE);
+        Map<String,Object> event = createEvent(INVALID_DOI, DataciteContentType.CITEPROC_JSON);
+
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
+
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -81,43 +74,14 @@ public class FetchDoiMetadataTest {
     }
 
     @Test
-    public void testUrlIsNull() {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
-        Map<String, Object> event = new HashMap<>();
-        Map<String, String> queryStringParameters = new HashMap<>();
-        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
-        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
-        String content = result.getBody();
-        assertNotNull(content);
-        assertEquals(getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
-    }
-
-    @Test
-    public void testMissingQueryParamsNull() {
-        Map<String, Object> event = new HashMap<>();
-        Map<String, String> queryStringParameters = new HashMap<>();
-        queryStringParameters.put(FetchDoiMetadata.URL_KEY, DOI_URL);
-        event.put(WRONG_QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata();
-        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
-        String content = result.getBody();
-        assertNotNull(content);
-        assertEquals(getErrorAsJson(FetchDoiMetadata.URL_IS_NULL), content);
-    }
-
-    @Test
     public void testCommunicationIssuesOnCallingHandler() throws Exception {
-        Map<String, Object> event = new HashMap<>();
-        Map<String, String> queryStringParameters = new HashMap<>();
-        queryStringParameters.put(FetchDoiMetadata.URL_KEY, DOI_URL);
-        event.put(FetchDoiMetadata.QUERY_STRING_PARAMETERS_KEY, queryStringParameters);
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
-        when(mockDataciteConnection.connect(anyString())).thenThrow(new IOException(MOCK_ERROR_MESSAGE));
+        DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenThrow(new IOException(MOCK_ERROR_MESSAGE));
+        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
+
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
+
         assertEquals(Response.Status.SERVICE_UNAVAILABLE.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -126,18 +90,19 @@ public class FetchDoiMetadataTest {
     }
 
     @Test
-    public void test_extract_metadata_from_resource_content() throws Exception {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
-        when(mockDataciteConnection.connect(anyString())).thenReturn(anyString());
-        String doiMetadataJson = fetchDoiMetadata.getDoiMetadataInJson(VALID_DOI);
-        assertNotNull(doiMetadataJson);
-    }
+    public void testUnexpectedException() throws Exception {
+        DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenThrow(new NullPointerException());
+        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
 
-    @Test(expected = URISyntaxException.class)
-    public void test_getDoiMetadata_json_url_no_uri() throws Exception {
-        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(mockDataciteConnection);
-        fetchDoiMetadata.getDoiMetadataInJson(INVALID_DOI);
-        fail();
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
+        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
+
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals(getErrorAsJson(null), content);
     }
 
     @Test

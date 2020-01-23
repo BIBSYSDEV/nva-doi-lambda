@@ -1,24 +1,14 @@
 package no.unit.nva.doi;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.MockitoRule;
 
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class GatewayResponseTest {
 
     private static final String EMPTY_STRING = "";
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     public static final String CORS_HEADER = "CORS header";
     public static final String MOCK_BODY = "mock";

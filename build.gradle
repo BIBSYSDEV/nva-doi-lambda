@@ -67,7 +67,7 @@ tasks.withType(Checkstyle) {
 
 jacocoTestReport {
     reports {
-        xml.enabled false
+        xml.enabled true
         csv.enabled false
         html.destination file("${buildDir}/reports/jacoco")
     }
@@ -86,7 +86,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'METHOD'
                 value = 'COVEREDRATIO'
-                minimum = 1
+                minimum = 1.000
             }
         }
 
@@ -94,7 +94,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'CLASS'
                 value = 'COVEREDRATIO'
-                minimum = 1
+                minimum = 1.000
             }
         }
     }

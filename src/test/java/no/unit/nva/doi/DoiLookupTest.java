@@ -19,7 +19,6 @@ public class DoiLookupTest {
     public void test() throws MalformedURLException {
         DoiLookup doiLookup = new DoiLookup();
         doiLookup.setDoiUrl(new URL("https://doi.org/10.1109/5.771073"));
-        doiLookup.setDataciteContentType(DataciteContentType.CITEPROC_JSON);
 
         String json = gson.toJson(doiLookup);
         System.out.println(json);
@@ -27,8 +26,6 @@ public class DoiLookupTest {
         DoiLookup processedDoiLookup = gson.fromJson(json, DoiLookup.class);
 
         assertEquals(processedDoiLookup.getDoiUrl(), doiLookup.getDoiUrl());
-        assertEquals(processedDoiLookup.getDataciteContentType(), doiLookup.getDataciteContentType());
-
     }
 
 

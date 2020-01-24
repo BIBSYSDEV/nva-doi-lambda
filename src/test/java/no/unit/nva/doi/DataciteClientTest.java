@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,9 @@ import static org.mockito.Mockito.when;
 public class DataciteClientTest {
 
     public static final String EXAMPLE_URL = "http://example.org";
+    public static final String DATACITE_RESPONSE_FILE = "src/test/resources/dataciteResponse.json";
+    public static final String EMPTY_RESPONSE_FILE = "src/test/resources/emptyResponse";
+
 
     @Test
     public void testMockUrl() throws IOException {
@@ -28,11 +32,18 @@ public class DataciteClientTest {
     }
 
     @Test
-    public void testExampleUrl() throws IOException {
+    public void testValidResponseUrl() throws IOException {
         DataciteClient dataciteClient = mock(DataciteClient.class);
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenCallRealMethod();
-        URL exampleUrl = new URL(EXAMPLE_URL);
-        String stringFromUrl = dataciteClient.readStringFromUrl(exampleUrl);
+        String stringFromUrl = dataciteClient.readStringFromUrl(Paths.get(DATACITE_RESPONSE_FILE).toUri().toURL());
         Assert.assertNotNull(stringFromUrl);
+    }
+
+    @Test
+    public void testEmptyResponseUrl() throws IOException {
+        DataciteClient dataciteClient = mock(DataciteClient.class);
+        when(dataciteClient.readStringFromUrl(any(URL.class))).thenCallRealMethod();
+        String stringFromUrl = dataciteClient.readStringFromUrl(Paths.get(EMPTY_RESPONSE_FILE).toUri().toURL());
+        Assert.assertEquals(new String(), stringFromUrl);
     }
 }

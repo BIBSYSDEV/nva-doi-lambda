@@ -8,9 +8,10 @@ import java.util.Scanner;
 
 public class DataciteClient {
 
-    private final String dataciteBaseUrlString = "https://data.datacite.org";
+    private static final String dataciteBaseUrlString = "https://data.datacite.org";
 
-    protected URL createRequestUrl(String doiUrlString, DataciteContentType dataciteContentType) throws MalformedURLException {
+    protected URL createRequestUrl(String doiUrlString, DataciteContentType dataciteContentType)
+            throws MalformedURLException {
         URL dataciteBaseUrl = new URL(dataciteBaseUrlString);
         URL doiUrl = new URL(doiUrlString);
         return new URL(dataciteBaseUrl,
@@ -25,8 +26,7 @@ public class DataciteClient {
 
     protected String readStringFromUrl(URL url) throws IOException {
         try (Scanner scanner = new Scanner(url.openStream(),
-                StandardCharsets.UTF_8.toString()))
-        {
+                StandardCharsets.UTF_8.toString())) {
             scanner.useDelimiter("\\A");
             return scanner.hasNext() ? scanner.next() : "";
         }

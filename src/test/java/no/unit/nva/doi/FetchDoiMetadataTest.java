@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,14 +49,33 @@ public class FetchDoiMetadataTest {
         assertNotNull(content);
     }
 
-    private Map<String, Object> createEvent(String doiUrlString, DataciteContentType dataciteContentType) throws MalformedURLException {
+    private Map<String, Object> createEvent(String doiUrlString, DataciteContentType dataciteContentType)
+            throws MalformedURLException {
         Map<String, Object> event = new HashMap<>();
         DoiLookup doiLookup = new DoiLookup();
         doiLookup.setDoiUrl(new URL(doiUrlString));
-        doiLookup.setDataciteContentType(dataciteContentType);
         event.put("body", gson.toJson(doiLookup));
+        event.put("headers", Collections.singletonMap(HttpHeaders.ACCEPT, dataciteContentType.getContentType()));
         return event;
     }
+
+    @Test
+    public void testMissingAcceptHeader() throws IOException {
+        DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenReturn(DATACITE_RESPONSE);
+        Map<String, Object> event = new HashMap<>();
+        event.put("headers", Collections.emptyMap());
+
+        FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
+        GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        assertEquals(getErrorAsJson(FetchDoiMetadata.MISSING_ACCEPT_HEADER), content);
+    }
+
 
     @Test
     public void testInvalidDoiUrl() throws IOException {
@@ -76,7 +96,8 @@ public class FetchDoiMetadataTest {
     @Test
     public void testCommunicationIssuesOnCallingHandler() throws Exception {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
-        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenThrow(new IOException(MOCK_ERROR_MESSAGE));
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
+                .thenThrow(new IOException(MOCK_ERROR_MESSAGE));
         Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
@@ -92,7 +113,8 @@ public class FetchDoiMetadataTest {
     @Test
     public void testUnexpectedException() throws Exception {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
-        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenThrow(new NullPointerException());
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
+                .thenThrow(new NullPointerException());
         Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);

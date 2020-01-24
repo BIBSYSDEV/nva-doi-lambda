@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DataciteContentTypeTest {
 
-    public static final String VALID_ENUM_NAME = "datacite_json";
+    public static final String VALID_ENUM_NAME = DataciteContentType.DATACITE_JSON.getContentType();
     public static final String INVALID_ENUM_NAME = "Invalid enum name";
 
     @Test

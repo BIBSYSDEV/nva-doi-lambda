@@ -46,7 +46,6 @@ jar.enabled = false
 project.tasks.build.dependsOn project.tasks.shadowJar
 
 pmd {
-    toolVersion = '6.20.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
@@ -68,13 +67,7 @@ tasks.withType(Checkstyle) {
 jacocoTestReport {
     reports {
         xml.enabled true
-        csv.enabled false
-        html.destination file("${buildDir}/reports/jacoco")
     }
-}
-
-jacoco {
-    toolVersion = "0.8.5"
 }
 
 check.dependsOn jacocoTestCoverageVerification

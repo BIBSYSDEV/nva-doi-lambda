@@ -4,19 +4,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,99 +19,78 @@ import java.util.regex.Pattern;
  */
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    public static final String URL_IS_NULL = "The input parameter 'url' is null";
-    public static final String INVALID_DOI_URL = "The input parameter 'url' is not a valid DOI";
-    public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
-    public static final String URL_KEY = "url";
-    private static final String EMPTY_STRING = "";
-
+    public static final String INVALID_DOI_URL = "The property 'doi_url' is not a valid DOI";
+    public static final String MISSING_ACCEPT_HEADER = "Missing Accept header";
     private static final Pattern DOI_URL_PATTERN = Pattern.compile("^https?://(dx\\.)?doi\\.org/"
             + "(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
      */
-    protected transient DataciteConnection dataciteConnection;
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private final transient DataciteClient dataciteClient;
 
     public FetchDoiMetadata() {
-        dataciteConnection = new DataciteConnection();
+        this(new DataciteClient());
     }
 
-    public FetchDoiMetadata(DataciteConnection dataciteConnection) {
-        this.dataciteConnection = dataciteConnection;
+    public FetchDoiMetadata(DataciteClient dataciteClient) {
+        this.dataciteClient = dataciteClient;
     }
-
 
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
 
         GatewayResponse gatewayResponse = new GatewayResponse();
+        DoiLookup doiLookup;
+        DataciteContentType dataciteContentType;
 
         try {
-            this.checkParameters(input);
-        } catch (RuntimeException e) {
+            Map<String,String> headers = (Map<String, String>) input.get("headers");
+            dataciteContentType = DataciteContentType.lookup(
+                    Optional.ofNullable(headers.get(HttpHeaders.ACCEPT))
+                    .orElseThrow(() -> new IllegalArgumentException(MISSING_ACCEPT_HEADER))
+            );
+            doiLookup = gson.fromJson((String) input.get("body"), DoiLookup.class);
+            validate(doiLookup);
+        } catch (Exception e) {
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             return gatewayResponse;
         }
 
-        Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-        String url = queryStringParameters.get(URL_KEY);
-
         try {
-            String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.displayName());
-            final String uri = new URI(decodedUrl).toURL().toString();
-            gatewayResponse.setBody(this.getDoiMetadataInJson(uri));
+            String doiMetadata = lookupDoiMetadata(doiLookup.getDoiUrl(), dataciteContentType);
+            gatewayResponse.setBody(doiMetadata);
             gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
-        } catch (URISyntaxException | MalformedURLException | UnsupportedEncodingException e) {
-            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-            gatewayResponse.setErrorBody(e.getMessage());
-            System.out.println(e.getMessage());
         } catch (IOException e) {
             gatewayResponse.setStatusCode(Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
+            gatewayResponse.setErrorBody(e.getMessage());
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
         }
         return gatewayResponse;
     }
 
-    @SuppressWarnings("unchecked")
-    private void checkParameters(Map<String, Object> input) {
-        Map<String, String> queryStringParameters = Optional.ofNullable((Map<String, String>) input
-                .get(QUERY_STRING_PARAMETERS_KEY)).orElse(new ConcurrentHashMap<>());
-        String url = queryStringParameters.getOrDefault(URL_KEY, EMPTY_STRING);
-        if (url.isEmpty()) {
-            throw new RuntimeException(URL_IS_NULL);
-        }
-        if (!isValidDoi(url)) {
-            throw new RuntimeException(INVALID_DOI_URL);
-        }
-
+    private String lookupDoiMetadata(URL doiUrl, DataciteContentType dataciteContentType) throws IOException {
+        System.out.println("getDoiMetadata(doi:" + doiUrl + ")");
+        return dataciteClient.fetchMetadata(doiUrl.toString(), dataciteContentType);
     }
 
-    private boolean isValidDoi(String url) {
-        Matcher m = DOI_URL_PATTERN.matcher(url);
+    private void validate(DoiLookup doiLookup) {
+        if (!isValidDoi(doiLookup.getDoiUrl())) {
+            throw new IllegalStateException(INVALID_DOI_URL);
+        }
+    }
+
+    private boolean isValidDoi(URL url) {
+        Matcher m = DOI_URL_PATTERN.matcher(url.toString());
         return m.find();
-    }
-
-    /**
-     * The method takes a doi-url as String and returns the corresponding metadata of a publication
-     * as a json-formatted String.
-     *
-     * @param doi String representing a doi-url
-     * @return a json containing metadata to the publication given by its doi
-     * @throws IOException        if connection fails
-     * @throws URISyntaxException if the URI has wrong syntax
-     */
-    protected String getDoiMetadataInJson(String doi) throws URISyntaxException, IOException {
-        System.out.println("getDoiMetadataInJson(doi:" + doi + ")");
-
-        final String doiPath = new URI(doi).getPath();
-        String jsonString = dataciteConnection.connect(doiPath);
-        JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
-        return GSON.toJson(jsonObject);
     }
 
 }

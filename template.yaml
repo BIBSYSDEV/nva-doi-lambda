@@ -11,11 +11,10 @@ Globals:
     Timeout: 20
   Api:
     Cors:
-      AllowCredentials: true
       AllowOrigin: !Sub
         - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
-      AllowMethods: "'OPTIONS, GET, PUT'"
+      AllowMethods: "'OPTIONS, POST'"
       AllowHeaders: !Ref CorsAllowHeaders
 
 
@@ -49,6 +48,14 @@ Resources:
           MyCognitoAuthorizer:
             UserPoolArn: !Ref CognitoAuthorizerArn
       EndpointConfiguration: Regional
+      Models:
+        DoiLookup:
+          type: object
+          required:
+            - doi_url
+          properties:
+            doi_url:
+              type: string
 
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -59,7 +66,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
-          AllowOrigin: !Ref  CorsOrigin
+          AllowOrigin: !Ref CorsOrigin
       Events:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -67,10 +74,11 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             Path: /
-            Method: get
+            Method: post
             RestApiId: !Ref NvaDoiFunctionApi
-            RequestParameters:
-            - method.request.querystring.url
+            RequestModel:
+              Model: DoiLookup
+              Required: true
 
   NvaDoiFunctionBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

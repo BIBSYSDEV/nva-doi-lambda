@@ -66,6 +66,9 @@ Resources:
             Path: /
             Method: post
             RestApiId: !Ref NvaDoiFunctionApi
+            RequestParameters:
+              - method.request.header.Accept:
+              - Required: true
             RequestModel:
               Model: DoiLookup
               Required: true

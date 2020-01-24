@@ -11,11 +11,9 @@ Globals:
     Timeout: 20
   Api:
     Cors:
-      AllowOrigin: !Sub
-        - "'${Domain}'"
-        - Domain: !Ref  CorsOrigin
-      AllowMethods: "'OPTIONS, POST'"
-      AllowHeaders: !Ref CorsAllowHeaders
+      AllowMethods: "'POST,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
 
 
 Parameters:
@@ -28,14 +26,6 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
-  CorsOrigin:
-    Type: String
-    Description: Value to use for Cors 'Allow...' header if value is set
-    Default: '{{resolve:secretsmanager:DefaultCorsOrigin:SecretString}}'
-  CorsAllowHeaders:
-    Type: String
-    Description: String of headers to allow.
-    Default: '{{resolve:ssm:defaultCorsAllowHeaders:1}}'
 
 Resources:
 
@@ -66,7 +56,7 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
-          AllowOrigin: !Ref CorsOrigin
+          AllowOrigin: '*'
       Events:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api

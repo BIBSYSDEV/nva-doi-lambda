@@ -67,9 +67,9 @@ Resources:
             Method: post
             RestApiId: !Ref NvaDoiFunctionApi
             BinaryMediaTypes:
-              - 'application/vnd.citationstyles.csl+json'
-              - 'application/vnd.datacite.datacite+json'
-              - 'application/vnd.datacite.datacite+xml'
+              - 'application~1vnd.citationstyles.csl+json'
+              - 'application~1vnd.datacite.datacite+json'
+              - 'application~1vnd.datacite.datacite+xml'
             RequestModel:
               Model: DoiLookup
               Required: true

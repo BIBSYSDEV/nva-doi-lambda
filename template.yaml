@@ -33,24 +33,59 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      Auth:
-        Authorizers:
-          MyCognitoAuthorizer:
-            UserPoolArn: !Ref CognitoAuthorizerArn
-      BinaryMediaTypes:
-        - 'application~1vnd.citationstyles.csl+json'
-        - 'application~1vnd.datacite.datacite+json'
-        - 'application~1vnd.datacite.datacite+xml'
-      EndpointConfiguration: Regional
-      Models:
-        DoiLookup:
-          type: object
-          required:
-            - doi_url
-          properties:
-            doi_url:
-              type: string
-
+      EndpointConfiguration: REGIONAL
+      DefinitionBody:
+        openapi: 3.0.0
+        info:
+          title: 'NVA DOI proxy'
+          version: '1.0'
+        paths:
+          /:
+            post:
+              summary: Request data for DOI URL
+              security:
+                - sigv4: []
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DoiLookup'
+                    example:
+                      doiUrl: 'https://doi.org/10.1109/5.771073'
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDoiFunction.Arn}/invocations
+                responses: {}
+                httpMethod: "POST"
+                type: "aws_proxy"
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/vnd.citationstyles.csl+json:
+                      schema: {}
+                    application/vnd.datacite.datacite+json:
+                      schema: {}
+                    applicationvnd.datacite.datacite+xmls:
+                      schema: {}
+        components:
+          securitySchemes:
+            sigv4:
+              type: "apiKey"
+              name: "Authorization"
+              in: "header"
+              x-amazon-apigateway-authtype: "awsSigv4"
+          schemas:
+            DoiLookup:
+              title: Lookup DOI URL
+              type: object
+              properties:
+                doiURL:
+                  type: string
+                  description: DOI URL
+              required:
+                - doiUrl
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -70,9 +105,6 @@ Resources:
             Path: /
             Method: post
             RestApiId: !Ref NvaDoiFunctionApi
-            RequestModel:
-              Model: DoiLookup
-              Required: true
 
   NvaDoiFunctionBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

@@ -49,6 +49,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         try {
             Map<String,String> headers = (Map<String, String>) input.get("headers");
+            System.out.println(headers);
             dataciteContentType = DataciteContentType.lookup(
                     Optional.ofNullable(headers.get(HttpHeaders.ACCEPT))
                     .orElseThrow(() -> new IllegalArgumentException(MISSING_ACCEPT_HEADER))

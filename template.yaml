@@ -61,7 +61,6 @@ Resources:
                 passthroughBehavior: WHEN_NO_MATCH
               responses:
                 '200':
-                  description: OK
                   content:
                     application/vnd.citationstyles.csl+json:
                       schema:

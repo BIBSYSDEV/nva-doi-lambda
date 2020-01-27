@@ -28,7 +28,6 @@ Parameters:
     Description: Base path mapping in CustomDomain
 
 Resources:
-
   NvaDoiFunctionApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -44,7 +43,7 @@ Resources:
             post:
               summary: Request data for DOI URL
               security:
-                - sigv4: []
+                - CognitoUserPool: []
               requestBody:
                 required: true
                 content:
@@ -71,11 +70,15 @@ Resources:
                       schema: {}
         components:
           securitySchemes:
-            sigv4:
-              type: "apiKey"
-              name: "Authorization"
-              in: "header"
-              x-amazon-apigateway-authtype: "awsSigv4"
+            CognitoUserPool:
+              type: apiKey
+              name: Authorization
+              in: header
+              x-amazon-apigateway-authtype: cognito_user_pools,
+              x-amazon-apigateway-authorizer:
+                type: cognito_user_pools
+                providerARNs:
+                  - !Ref CognitoAuthorizerArn
           schemas:
             DoiLookup:
               title: Lookup DOI URL
@@ -100,8 +103,6 @@ Resources:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             Path: /
             Method: post
             RestApiId: !Ref NvaDoiFunctionApi

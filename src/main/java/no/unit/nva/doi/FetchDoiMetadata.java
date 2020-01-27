@@ -6,13 +6,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static no.unit.nva.doi.GatewayResponse.errorGatewayResponse;
 
 /**
  * Handler for requests to Lambda function.
@@ -23,11 +28,14 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     public static final String MISSING_ACCEPT_HEADER = "Missing Accept header";
     private static final Pattern DOI_URL_PATTERN = Pattern.compile("^https?://(dx\\.)?doi\\.org/"
             + "(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
+    public static final String HEADERS = "headers";
+    public static final String BODY = "body";
 
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
      */
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
 
     private final transient DataciteClient dataciteClient;
 
@@ -43,39 +51,34 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
 
-        GatewayResponse gatewayResponse = new GatewayResponse();
         DoiLookup doiLookup;
         DataciteContentType dataciteContentType;
 
         try {
-            Map<String,String> headers = (Map<String, String>) input.get("headers");
+            Map<String,String> headers = (Map<String, String>) input.get(HEADERS);
             System.out.println(headers);
             dataciteContentType = DataciteContentType.lookup(
                     Optional.ofNullable(headers.get(HttpHeaders.ACCEPT))
                     .orElseThrow(() -> new IllegalArgumentException(MISSING_ACCEPT_HEADER))
             );
-            doiLookup = gson.fromJson((String) input.get("body"), DoiLookup.class);
+            doiLookup = gson.fromJson((String) input.get(BODY), DoiLookup.class);
             validate(doiLookup);
         } catch (Exception e) {
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            return gatewayResponse;
+            System.out.println(e.getMessage());
+            return errorGatewayResponse(e.getMessage(), BAD_REQUEST.getStatusCode());
         }
 
         try {
             String doiMetadata = lookupDoiMetadata(doiLookup.getDoiUrl(), dataciteContentType);
-            gatewayResponse.setBody(doiMetadata);
-            gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+            return new GatewayResponse(doiMetadata, OK.getStatusCode(), dataciteContentType.getContentType());
         } catch (IOException e) {
-            gatewayResponse.setStatusCode(Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
-            gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
+            return errorGatewayResponse(e.getMessage(), SERVICE_UNAVAILABLE.getStatusCode());
         } catch (Exception e) {
-            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-            gatewayResponse.setErrorBody(e.getMessage());
             System.out.println(e.getMessage());
+            return errorGatewayResponse(e.getMessage(), INTERNAL_SERVER_ERROR.getStatusCode());
+
         }
-        return gatewayResponse;
     }
 
     private String lookupDoiMetadata(URL doiUrl, DataciteContentType dataciteContentType) throws IOException {

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static no.unit.nva.doi.DataciteContentType.CITEPROC_JSON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,13 +39,14 @@ public class FetchDoiMetadataTest {
     public void successfulResponse() throws Exception {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenReturn(DATACITE_RESPONSE);
-        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
+        Map<String,Object> event = createEvent(VALID_DOI, CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
 
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                CITEPROC_JSON.getContentType());
         String content = result.getBody();
         assertNotNull(content);
     }
@@ -81,7 +83,7 @@ public class FetchDoiMetadataTest {
     public void testInvalidDoiUrl() throws IOException {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenReturn(DATACITE_RESPONSE);
-        Map<String,Object> event = createEvent(INVALID_DOI, DataciteContentType.CITEPROC_JSON);
+        Map<String,Object> event = createEvent(INVALID_DOI, CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
@@ -98,7 +100,7 @@ public class FetchDoiMetadataTest {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
                 .thenThrow(new IOException(MOCK_ERROR_MESSAGE));
-        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
+        Map<String,Object> event = createEvent(VALID_DOI, CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);
@@ -115,7 +117,7 @@ public class FetchDoiMetadataTest {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
                 .thenThrow(new NullPointerException());
-        Map<String,Object> event = createEvent(VALID_DOI, DataciteContentType.CITEPROC_JSON);
+        Map<String,Object> event = createEvent(VALID_DOI, CITEPROC_JSON);
 
         FetchDoiMetadata fetchDoiMetadata = new FetchDoiMetadata(dataciteClient);
         GatewayResponse result = fetchDoiMetadata.handleRequest(event, null);

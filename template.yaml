@@ -63,11 +63,14 @@ Resources:
                   description: OK
                   content:
                     application/vnd.citationstyles.csl+json:
-                      schema: {}
+                      schema:
+                        type: object
                     application/vnd.datacite.datacite+json:
-                      schema: {}
+                      schema:
+                        type: object
                     applicationvnd.datacite.datacite+xmls:
-                      schema: {}
+                      schema:
+                        type: object
         components:
           securitySchemes:
             CognitoUserPool:

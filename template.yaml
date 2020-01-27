@@ -58,7 +58,7 @@ Resources:
                 responses: {}
                 httpMethod: POST
                 type: AWS_PROXY
-                passthroughBehavior: WHEN_NOT_MATCH
+                passthroughBehavior: WHEN_NO_MATCH
               responses:
                 '200':
                   description: OK

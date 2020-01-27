@@ -66,9 +66,10 @@ Resources:
             Path: /
             Method: post
             RestApiId: !Ref NvaDoiFunctionApi
-            RequestParameters:
-              - method.request.header.Accept:
-                  Required: true
+            BinaryMediaTypes:
+              - 'application/vnd.citationstyles.csl+json'
+              - 'application/vnd.datacite.datacite+json'
+              - 'application/vnd.datacite.datacite+xml'
             RequestModel:
               Model: DoiLookup
               Required: true

@@ -68,7 +68,7 @@ Resources:
                     application/vnd.datacite.datacite+json:
                       schema:
                         type: object
-                    applicationvnd.datacite.datacite+xmls:
+                    application/vnd.datacite.datacite+xml:
                       schema:
                         type: object
         components:

@@ -5,15 +5,30 @@ Description: >
 
   Sample SAM Template for AWS
 
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: NVA-DOI-Proxy
+    Description: Proxy DOI data requests to Datacite.
+    Author: Unit
+    SemanticVersion: 1.0.0
+    SpdxLicenseId: MIT
+    LicenseUrl: LICENSE
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 20
+  Api:
+    Cors:
+      AllowMethods: "'POST,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
 
 Parameters:
   CognitoAuthorizerArn:
     Type: String
     Description: Reference to Cognito UserPool for the stage
+    Default: '{{resolve:ssm:CognitoAuthorizerArn:2}}'
   CustomDomain:
     Type: String
     Description: Custom API to connect this lambda to
@@ -22,40 +37,87 @@ Parameters:
     Description: Base path mapping in CustomDomain
 
 Resources:
-
   NvaDoiFunctionApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      Auth:
-#        DefaultAuthorizer: MyCognitoAuthorizer
-        Authorizers:
-          MyCognitoAuthorizer:
-            UserPoolArn: !Ref CognitoAuthorizerArn
-      Cors:
-        AllowCredentials: true
-        AllowOrigin: "'http://localhost:3000'"
-#        AllowHeaders: "'Authorization'"
-        AllowMethods: "'OPTIONS, GET'"
-
+      EndpointConfiguration: REGIONAL
+      DefinitionBody:
+        openapi: 3.0.0
+        info:
+          title: NVA DOI proxy
+          version: '1.0'
+        paths:
+          /:
+            post:
+              summary: Request data for DOI URL
+              security:
+                - CognitoUserPool: []
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DoiLookup'
+                    example:
+                      doiUrl: 'https://doi.org/10.1109/5.771073'
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDoiFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+                passthroughBehavior: WHEN_NO_MATCH
+              responses:
+                '200':
+                  content:
+                    application/vnd.citationstyles.csl+json:
+                      schema:
+                        type: object
+                    application/vnd.datacite.datacite+json:
+                      schema:
+                        type: object
+                    application/vnd.datacite.datacite+xml:
+                      schema:
+                        type: object
+        components:
+          securitySchemes:
+            CognitoUserPool:
+              type: apiKey
+              name: Authorization
+              in: header
+              x-amazon-apigateway-authtype: cognito_user_pools
+              x-amazon-apigateway-authorizer:
+                type: cognito_user_pools
+                providerARNs:
+                  - !Ref CognitoAuthorizerArn
+          schemas:
+            DoiLookup:
+              title: Lookup DOI URL
+              type: object
+              properties:
+                doiUrl:
+                  type: string
+                  description: DOI URL
+              required:
+                - doiUrl
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: .
       Handler: no.unit.nva.doi.FetchDoiMetadata::handleRequest
       Runtime: java8
-      MemorySize: 1408
+      MemorySize: 512
+      Environment:
+        Variables:
+          AllowOrigin: '*'
       Events:
         NvaDoi:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             Path: /
-            Method: get
+            Method: post
             RestApiId: !Ref NvaDoiFunctionApi
-            RequestParameters:
-            - method.request.querystring.url
 
   NvaDoiFunctionBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

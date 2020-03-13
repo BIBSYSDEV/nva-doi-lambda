@@ -1,6 +1,5 @@
 package no.unit.nva.doi;
 
-
 public class Config {
 
     public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";

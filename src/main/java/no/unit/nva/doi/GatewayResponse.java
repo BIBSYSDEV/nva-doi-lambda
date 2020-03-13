@@ -1,14 +1,13 @@
 package no.unit.nva.doi;
 
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * POJO containing response object for API Gateway.
@@ -55,15 +54,14 @@ public class GatewayResponse {
     /**
      * Create error GatewayResponse.
      *
-     * @param message   message
-     * @param statusCode    statusCode
-     * @return  GatewayResponse
+     * @param message    message
+     * @param statusCode statusCode
+     * @return GatewayResponse
      */
     public static GatewayResponse errorGatewayResponse(String message, int statusCode) {
         JsonObject json = new JsonObject();
         json.addProperty(ERROR_KEY, message);
         return new GatewayResponse(json.toString(), statusCode, MediaType.APPLICATION_JSON);
     }
-
 
 }

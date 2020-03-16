@@ -11,5 +11,4 @@ public class DoiLookup {
     public void setDoi(String doi) {
         this.doi = doi;
     }
-
 }

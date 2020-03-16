@@ -1,12 +1,9 @@
 package no.unit.nva.utils;
 
-import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.ProxySelector;
-import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
@@ -17,13 +14,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSession;
 
 public class MockHttpClient<R> extends HttpClient {
 
-    private final R response;
+    protected final AbstractHttpResponse<R> response;
 
-    public MockHttpClient(R response) {
+    public MockHttpClient(AbstractHttpResponse<R> response) {
         this.response = response;
     }
 
@@ -73,17 +69,17 @@ public class MockHttpClient<R> extends HttpClient {
     }
 
     @Override
-    public <T> HttpResponse<T> send(HttpRequest request, BodyHandler<T> responseBodyHandler)
-        throws IOException, InterruptedException {
+    public <T> HttpResponse<T> send(HttpRequest request, BodyHandler<T> responseBodyHandler) {
         return null;
     }
 
+    // T must be the same with R
     @Override
     public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
                                                             BodyHandler<T> responseBodyHandler) {
 
-        CompletableFuture<HttpResponse<T>> result = CompletableFuture
-            .completedFuture(new HttpResponseImpl<T>(request, (T) response));
+        CompletableFuture<HttpResponse<T>> result = CompletableFuture.completedFuture(
+            ((HttpResponse<T>) response));
         return result;
     }
 
@@ -94,55 +90,4 @@ public class MockHttpClient<R> extends HttpClient {
         return null;
     }
 
-    public static class HttpResponseImpl<S> implements HttpResponse<S> {
-
-        private final HttpRequest request;
-        private final S body;
-
-        public HttpResponseImpl(HttpRequest request,
-                                S body) {
-            this.request = request;
-            this.body = body;
-        }
-
-        @Override
-        public int statusCode() {
-            return 0;
-        }
-
-        @Override
-        public HttpRequest request() {
-            return request;
-        }
-
-        @Override
-        public Optional<HttpResponse<S>> previousResponse() {
-            return Optional.empty();
-        }
-
-        @Override
-        public HttpHeaders headers() {
-            return null;
-        }
-
-        @Override
-        public S body() {
-            return body;
-        }
-
-        @Override
-        public Optional<SSLSession> sslSession() {
-            return Optional.empty();
-        }
-
-        @Override
-        public URI uri() {
-            return null;
-        }
-
-        @Override
-        public Version version() {
-            return null;
-        }
-    }
 }

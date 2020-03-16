@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.net.MalformedURLException;
-import java.net.URL;
 import org.junit.Test;
 
 public class DoiLookupTest {
@@ -17,14 +16,14 @@ public class DoiLookupTest {
     @Test
     public void test() throws MalformedURLException {
         DoiLookup doiLookup = new DoiLookup();
-        doiLookup.setDoiUrl(new URL("https://doi.org/10.1109/5.771073"));
+        doiLookup.setDoi("https://doi.org/10.1109/5.771073");
 
         String json = gson.toJson(doiLookup);
         System.out.println(json);
 
         DoiLookup processedDoiLookup = gson.fromJson(json, DoiLookup.class);
 
-        assertEquals(processedDoiLookup.getDoiUrl(), doiLookup.getDoiUrl());
+        assertEquals(processedDoiLookup.getDoi(), doiLookup.getDoi());
     }
 
 }

@@ -16,7 +16,6 @@ public class DataciteContentTypeTest {
 
         DataciteContentType dataciteContentType = DataciteContentType.lookup(VALID_ENUM_NAME);
         assertEquals(dataciteContentType, DataciteContentType.DATACITE_JSON);
-
     }
 
     @Test
@@ -27,7 +26,5 @@ public class DataciteContentTypeTest {
         });
 
         assertTrue(exception.getMessage().contains("Datacite Content Type not found for"));
-
     }
-
 }

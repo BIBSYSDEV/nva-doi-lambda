@@ -17,6 +17,7 @@ public class GatewayResponse {
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ERROR_KEY = "error";
     private final String body;
+    private final transient Map<String, String> customHeaders;
     private transient Map<String, String> headers;
     private final int statusCode;
 
@@ -24,8 +25,16 @@ public class GatewayResponse {
      * GatewayResponse constructor.
      */
     public GatewayResponse(final String body, final int status, String contentType) {
+        this(body, status, contentType, Collections.EMPTY_MAP);
+    }
+
+    /**
+     * Constructor that allows to add some custom headers in the response.
+     */
+    public GatewayResponse(final String body, final int status, String contentType, Map<String, String> customHeaders) {
         this.statusCode = status;
         this.body = body;
+        this.customHeaders = customHeaders;
         generateHeaders(contentType);
     }
 
@@ -44,6 +53,8 @@ public class GatewayResponse {
     private void generateHeaders(String contentType) {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, contentType);
+        headers.putAll(customHeaders);
+
         final String corsAllowDomain = Config.getInstance().getCorsHeader();
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
@@ -63,5 +74,4 @@ public class GatewayResponse {
         json.addProperty(ERROR_KEY, message);
         return new GatewayResponse(json.toString(), statusCode, MediaType.APPLICATION_JSON);
     }
-
 }

@@ -25,5 +25,4 @@ public class DoiLookupTest {
 
         assertEquals(processedDoiLookup.getDoi(), doiLookup.getDoi());
     }
-
 }

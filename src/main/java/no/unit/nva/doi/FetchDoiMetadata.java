@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -38,8 +39,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     public static final String BODY = "body";
 
     /**
-     * Connection object handling the direct communication via http for (mock)-testing to be
-     * injected.
+     * Connection object handling the direct communication via http for (mock)-testing to be injected.
      */
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -59,7 +59,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
-
         init(context);
         DoiLookup doiLookup;
         DataciteContentType dataciteContentType;
@@ -79,9 +78,12 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         }
 
         try {
-            String doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
-            return new GatewayResponse(doiMetadata, OK.getStatusCode(),
-                                       dataciteContentType.getContentType());
+            FetchResult doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
+            Map<String, String> contentHeaderMap = Collections
+                .singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
+            return new GatewayResponse(doiMetadata.getJson(), OK.getStatusCode(),
+                                       dataciteContentType.getContentType(),
+                                       contentHeaderMap);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             logger.log(e.getMessage());
@@ -90,7 +92,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             System.out.println(e.getMessage());
             logger.log(e.getMessage());
             return errorGatewayResponse(e.getMessage(), INTERNAL_SERVER_ERROR.getStatusCode());
-
         }
     }
 
@@ -99,10 +100,10 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         this.crossRefClient.setLogger(logger);
     }
 
-    private String lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)
+    private FetchResult lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)
         throws IOException, InterruptedException, ExecutionException, URISyntaxException {
         System.out.println("getDoiMetadata(doi:" + doiUrl + ")");
-        Optional<String> crossRefResult = crossRefClient.fetchDataForDoi(doiUrl);
+        Optional<FetchResult> crossRefResult = crossRefClient.fetchDataForDoi(doiUrl);
         if (crossRefResult.isEmpty()) {
             return dataciteClient.fetchMetadata(doiUrl, dataciteContentType);
         } else {
@@ -121,5 +122,4 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         Matcher stringMatcher = DOI_STRING_PATTERN.matcher(doi);
         return urlMatcher.find() || stringMatcher.find();
     }
-
 }

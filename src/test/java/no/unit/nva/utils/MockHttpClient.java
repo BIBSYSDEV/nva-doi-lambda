@@ -89,5 +89,4 @@ public class MockHttpClient<R> extends HttpClient {
                                                             PushPromiseHandler<T> pushPromiseHandler) {
         return null;
     }
-
 }

@@ -22,7 +22,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 public class CrossRefClient {
 
-    public static final String CROSSREF_LINK = "https://api.crossref.org";
+    public static final String CrossRefLink = "https://api.crossref.org";
     public static final String WORKS = "works";
 
     public static final int TIMEOUT_DURATION = 30;
@@ -38,15 +38,16 @@ public class CrossRefClient {
         this.httpClient = httpClient;
     }
 
-    public Optional<String> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
+    public Optional<FetchResult> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
         URI targetUri = createTargetUrl(doiIdentifier);
         return fetchJson(targetUri);
     }
 
-    private Optional<String> fetchJson(URI doiUri) {
+    private Optional<FetchResult> fetchJson(URI doiUri) {
         HttpRequest request = createRequest(doiUri);
         try {
-            return Optional.ofNullable(getFromWeb(request));
+            return Optional.ofNullable(getFromWeb(request))
+                           .map(json -> new FetchResult(CrossRefLink, json));
         } catch (InterruptedException |
             ExecutionException |
             NotFoundException |
@@ -55,7 +56,6 @@ public class CrossRefClient {
             logger.log(e.getMessage());
             return Optional.empty();
         }
-
     }
 
     private HttpRequest createRequest(URI doiUri) {
@@ -94,11 +94,10 @@ public class CrossRefClient {
         List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);
         List<String> pathSegments = composeAllPathSegments(doiPathSegments);
         return completeUrlToCrossRef(pathSegments);
-
     }
 
     private URI completeUrlToCrossRef(List<String> pathSegments) throws URISyntaxException {
-        return new URIBuilder(CROSSREF_LINK)
+        return new URIBuilder(CrossRefLink)
             .setPathSegments(pathSegments)
             .build();
     }
@@ -118,5 +117,4 @@ public class CrossRefClient {
     public void setLogger(LambdaLogger logger) {
         this.logger = logger;
     }
-
 }

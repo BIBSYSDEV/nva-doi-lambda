@@ -11,17 +11,18 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Optional;
 import no.bibsys.aws.tools.IoUtils;
+import no.unit.nva.utils.AbstractLambdaTest;
 import no.unit.nva.utils.HttpResponseStatus200;
 import no.unit.nva.utils.HttpResponseStatus404;
+import no.unit.nva.utils.HttpResponseStatus500;
 import no.unit.nva.utils.MockHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class CrossRefClientTest {
+public class CrossRefClientTest extends AbstractLambdaTest {
 
     public static final String DoiString = "10.1007/s00115-004-1822-4";
     public static final String DoiDxUrlPrefix = "https://dx.doi.org";
@@ -30,12 +31,13 @@ public class CrossRefClientTest {
     public static final String ERROR_MESSAGE = "404 error message";
 
     private CrossRefClient crossRefClient;
+    private LambdaLogger logger = mockLambdaLogger();
 
     @BeforeEach
     void before() throws IOException {
         HttpClient httpClient = mockHttpClientWithNonEmptyResponse();
-        LambdaLogger logger = mockLambdaLogger();
-        crossRefClient = new CrossRefClient(httpClient, logger);
+        crossRefClient = new CrossRefClient(httpClient);
+        crossRefClient.setLogger(logger);
     }
 
     private HttpClient mockHttpClientWithNonEmptyResponse() throws IOException {
@@ -80,18 +82,41 @@ public class CrossRefClientTest {
 
     @Test
     @DisplayName("fetchDataForDoi returns an empty Optional for a non existing URL")
-    public void fetchDataForDoiReturnAnOptionalWithAJsonObjectForANonExistingUrl()
+    public void fetchDataForDoiReturnAnEmptyOptionalForANonExistingUrl()
         throws URISyntaxException {
 
-        HttpResponseStatus404<String> errorResponse = new HttpResponseStatus404<String>(
-            ERROR_MESSAGE);
-        MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
-        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient, mockLambdaLogger());
+        CrossRefClient crossRefClient = crossRefClientReceives404();
+
         Optional<String> result = crossRefClient.fetchDataForDoi(DoiString);
         assertThat(result.isEmpty(), is(true));
     }
 
-    @
+    @Test
+    @DisplayName("fetchDataForDoi returns an empty Optional for an unknown error")
+    public void fetchDataForDoiReturnAnEmptyOptionalForAnUnknownError()
+        throws URISyntaxException {
+        CrossRefClient crossRefClient = crossRefClientReceives500();
+        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString);
+        assertThat(result.isEmpty(), is(true));
+    }
+
+    private CrossRefClient crossRefClientReceives404() {
+        HttpResponseStatus404<String> errorResponse = new HttpResponseStatus404<String>(
+            ERROR_MESSAGE);
+        MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
+        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
+        crossRefClient.setLogger(logger);
+        return crossRefClient;
+    }
+
+    private CrossRefClient crossRefClientReceives500() {
+        HttpResponseStatus500<String> errorResponse = new HttpResponseStatus500<String>(
+            ERROR_MESSAGE);
+        MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
+        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
+        crossRefClient.setLogger(logger);
+        return crossRefClient;
+    }
 
     private void targetURlReturnsAValidUrlForDoiStrings(String doiPrefix)
         throws URISyntaxException {
@@ -101,20 +126,6 @@ public class CrossRefClientTest {
 
         String output = crossRefClient.createTargetUrl(doiURL).toString();
         assertThat(output, is(equalTo(expected)));
-    }
-
-    private LambdaLogger mockLambdaLogger() {
-        return new LambdaLogger() {
-            @Override
-            public void log(String message) {
-                System.out.print(message);
-            }
-
-            @Override
-            public void log(byte[] message) {
-                log(Arrays.toString(message));
-            }
-        };
     }
 
 }

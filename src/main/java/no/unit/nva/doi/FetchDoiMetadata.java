@@ -27,12 +27,12 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
     public static final String INVALID_DOI_URL = "The property 'doi_url' is not a valid DOI";
     public static final String MISSING_ACCEPT_HEADER = "Missing Accept header";
-    public static final Pattern DOI_URL_PATTERN = Pattern.compile("^https?://(dx\\.)?doi\\.org/"
-                                                                      + "(10(?:\\.[0-9]+)+)/(.+)$",
-                                                                  Pattern.CASE_INSENSITIVE);
-    public static final Pattern DOI_STRING_PATTERN = Pattern
-        .compile("^(doi:)?(10(?:\\.[0-9]+)+)/(.+)$",
-                 Pattern.CASE_INSENSITIVE);
+    public static final Pattern DOI_URL_PATTERN =
+        Pattern.compile("^https?://(dx\\.)?doi\\.org/(10(?:\\.[0-9]+)+)/(.+)$",
+                        Pattern.CASE_INSENSITIVE);
+
+    public static final Pattern DOI_STRING_PATTERN =
+        Pattern.compile("^(doi:)?(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
 
     public static final String HEADERS = "headers";
     public static final String BODY = "body";
@@ -48,7 +48,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     private transient LambdaLogger logger;
 
     public FetchDoiMetadata() {
-        this(new DataciteClient(), null);
+        this(new DataciteClient(), new CrossRefClient());
     }
 
     public FetchDoiMetadata(DataciteClient dataciteClient, CrossRefClient crossRefClient) {
@@ -96,10 +96,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
     private void init(Context context) {
         this.logger = context.getLogger();
-        if (crossRefClient == null) {
-            this.crossRefClient = new CrossRefClient(logger);
-        }
-
+        this.crossRefClient.setLogger(logger);
     }
 
     private String lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)

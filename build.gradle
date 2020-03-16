@@ -28,7 +28,7 @@ dependencies {
     implementation 'com.github.BIBSYSDEV:aws-build-tools:v1.5.5'
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
 
-
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
     testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'

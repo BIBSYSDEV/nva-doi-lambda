@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MediaType;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -22,20 +24,18 @@ public class CrossRefClient {
 
     public static final String CROSSREF_LINK = "https://api.crossref.org";
     public static final String WORKS = "works";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String APPLICATION_JSON = "application/json";
+
     public static final int TIMEOUT_DURATION = 30;
     public static final String COULD_NOT_FIND_ENTRY_WITH_DOI = "Could not find entry with DOI:";
     private final transient HttpClient httpClient;
-    private final transient LambdaLogger logger;
+    private transient LambdaLogger logger;
 
-    public CrossRefClient(LambdaLogger logger) {
-        this(HttpClient.newHttpClient(), logger);
+    public CrossRefClient() {
+        this(HttpClient.newHttpClient());
     }
 
-    public CrossRefClient(HttpClient httpClient, LambdaLogger logger) {
+    public CrossRefClient(HttpClient httpClient) {
         this.httpClient = httpClient;
-        this.logger = logger;
     }
 
     public Optional<String> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
@@ -60,7 +60,7 @@ public class CrossRefClient {
 
     private HttpRequest createRequest(URI doiUri) {
         return HttpRequest.newBuilder(doiUri)
-                          .header(CONTENT_TYPE_HEADER, APPLICATION_JSON)
+                          .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                           .timeout(Duration.ofSeconds(TIMEOUT_DURATION))
                           .GET()
                           .build();
@@ -113,6 +113,10 @@ public class CrossRefClient {
     private List<String> stripHttpPartFromDoi(String doiIdentifier) {
         String path = URI.create(doiIdentifier).getPath();
         return URLEncodedUtils.parsePathSegments(path);
+    }
+
+    public void setLogger(LambdaLogger logger) {
+        this.logger = logger;
     }
 
 }

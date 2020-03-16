@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -27,11 +26,12 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import no.unit.nva.utils.AbstractLambdaTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class FetchDoiMetadataTest {
+public class FetchDoiMetadataTest extends AbstractLambdaTest {
 
     public static final String VALID_DOI = "https://doi.org/10.1093/afraf/ady029";
     public static final String MOCK_ERROR_MESSAGE = "The test told me to fail";
@@ -183,17 +183,6 @@ public class FetchDoiMetadataTest {
         JsonObject json = new JsonObject();
         json.addProperty(ERROR_KEY, message);
         return json.toString();
-    }
-
-    private static LambdaLogger createMockLogger() {
-        LambdaLogger logger = mock(LambdaLogger.class);
-        return logger;
-    }
-
-    private static Context createMockContext() {
-        Context context = mock(Context.class);
-        when(context.getLogger()).thenReturn(createMockLogger());
-        return context;
     }
 
     private static final CrossRefClient createCrossRefClient() {

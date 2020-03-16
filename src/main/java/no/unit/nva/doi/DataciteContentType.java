@@ -13,7 +13,8 @@ public enum DataciteContentType {
     @SerializedName("application/vnd.datacite.datacite+xml")
     DATACITE_XML("application/vnd.datacite.datacite+xml");
 
-    public static final String DataciteContentTypeNotFound = "Datacite Content Type not found for '%s', expected one of '%s'.";
+    public static final String DataciteContentTypeNotFound =
+        "Datacite Content Type not found for '%s', expected one of '%s'.";
     private final String contentType;
 
     DataciteContentType(String contentType) {

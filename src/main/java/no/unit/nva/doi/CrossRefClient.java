@@ -27,6 +27,7 @@ public class CrossRefClient {
 
     public static final int TIMEOUT_DURATION = 30;
     public static final String COULD_NOT_FIND_ENTRY_WITH_DOI = "Could not find entry with DOI:";
+    public static final String UNKNOWN_ERROR_MESSAGE = "Something went wrong. StatusCode:";
     private final transient HttpClient httpClient;
     private transient LambdaLogger logger;
 
@@ -39,7 +40,7 @@ public class CrossRefClient {
     }
 
     public Optional<FetchResult> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
-        URI targetUri = createTargetUrl(doiIdentifier);
+        URI targetUri = createUrlToCrossRef(doiIdentifier);
         return fetchJson(targetUri);
     }
 
@@ -81,14 +82,15 @@ public class CrossRefClient {
         if (response.statusCode() == HttpStatus.SC_NOT_FOUND) {
             throw new NotFoundException(COULD_NOT_FIND_ENTRY_WITH_DOI + request.uri().toString());
         }
-        throw new BadRequestException("Something went wrong");
+        throw new BadRequestException(UNKNOWN_ERROR_MESSAGE + response.statusCode());
     }
 
     private boolean responseIsSuccessful(HttpResponse<String> response) {
-        return response.statusCode() == HttpStatus.SC_OK;
+        int statusCode = response.statusCode();
+        return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
     }
 
-    protected URI createTargetUrl(String doiIdentifier)
+    protected URI createUrlToCrossRef(String doiIdentifier)
         throws URISyntaxException {
 
         List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);

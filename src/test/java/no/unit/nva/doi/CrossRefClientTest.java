@@ -33,7 +33,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
         throws URISyntaxException {
         String expected = String.join("/", CrossRefClient.CrossRefLink, WORKS, DoiString);
 
-        String output = crossRefClient.createTargetUrl(DoiString).toString();
+        String output = crossRefClient.createUrlToCrossRef(DoiString).toString();
         assertThat(output, is(equalTo(expected)));
     }
 
@@ -87,7 +87,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
         String doiURL = String.join("/", doiPrefix, DoiString);
         String expected = String.join("/", CrossRefClient.CrossRefLink, WORKS, DoiString);
 
-        String output = crossRefClient.createTargetUrl(doiURL).toString();
+        String output = crossRefClient.createUrlToCrossRef(doiURL).toString();
         assertThat(output, is(equalTo(expected)));
     }
 }

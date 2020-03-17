@@ -11,7 +11,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -47,11 +46,18 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
 
     public static final String VALID_DOI_WITH_DOI_PREFIX = "doi:10.123.4.5/124";
     public static final String VALID_DOI_WITHOUT_DOI_PREFIX = "10.123.4.5/124";
-
-    private static final Context mockLambdaContext = createMockContext();
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final CrossRefClient crossRefClient = createCrossRefClient();
 
-    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final CrossRefClient createCrossRefClient() {
+        CrossRefClient client = mock(CrossRefClient.class);
+        try {
+            when(client.fetchDataForDoi(anyString())).thenReturn(Optional.empty());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return client;
+    }
 
     @Test
     public void successfulResponse() throws Exception {
@@ -247,16 +253,6 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
         JsonObject json = new JsonObject();
         json.addProperty(ERROR_KEY, message);
         return json.toString();
-    }
-
-    private static final CrossRefClient createCrossRefClient() {
-        CrossRefClient client = mock(CrossRefClient.class);
-        try {
-            when(client.fetchDataForDoi(anyString())).thenReturn(Optional.empty());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        return client;
     }
 
     private DataciteClient dataciteClientWithSuccessfulResponse() throws IOException {

@@ -23,6 +23,8 @@ public abstract class AbstractLambdaTest {
     public static final Path CrossRefSamplePath = Paths.get("crossRefSample.json");
     public static final String ERROR_MESSAGE = "404 error message";
 
+    protected final Context mockLambdaContext = createMockContext();
+
     protected LambdaLogger logger = mockLambdaLogger();
 
     protected static Context createMockContext() {

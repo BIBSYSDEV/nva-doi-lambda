@@ -9,6 +9,8 @@ import java.util.Arrays;
 
 public abstract class AbstractLambdaTest {
 
+    protected static final Context mockLambdaContext = createMockContext();
+
     protected static Context createMockContext() {
         Context context = mock(Context.class);
         when(context.getLogger()).thenReturn(mockLambdaLogger());

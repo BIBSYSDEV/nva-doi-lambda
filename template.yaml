@@ -7,7 +7,7 @@ Description: >
 
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: NVA-DOI-Proxy
+    Name: DoiProxy
     Description: Proxy DOI data requests to Datacite.
     Author: Unit
     SemanticVersion: 1.0.0

@@ -22,7 +22,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 public class CrossRefClient {
 
-    public static final String CrossRefLink = "https://api.crossref.org";
+    public static final String CROSSREF_LINK = "https://api.crossref.org";
     public static final String WORKS = "works";
 
     public static final int TIMEOUT_DURATION = 30;
@@ -48,7 +48,7 @@ public class CrossRefClient {
         HttpRequest request = createRequest(doiUri);
         try {
             return Optional.ofNullable(getFromWeb(request))
-                           .map(json -> new FetchResult(CrossRefLink, json));
+                           .map(json -> new FetchResult(CROSSREF_LINK, json));
         } catch (InterruptedException |
             ExecutionException |
             NotFoundException |
@@ -95,11 +95,11 @@ public class CrossRefClient {
 
         List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);
         List<String> pathSegments = composeAllPathSegments(doiPathSegments);
-        return completeUrlToCrossRef(pathSegments);
+        return addPathSegments(pathSegments);
     }
 
-    private URI completeUrlToCrossRef(List<String> pathSegments) throws URISyntaxException {
-        return new URIBuilder(CrossRefLink)
+    private URI addPathSegments(List<String> pathSegments) throws URISyntaxException {
+        return new URIBuilder(CROSSREF_LINK)
             .setPathSegments(pathSegments)
             .build();
     }

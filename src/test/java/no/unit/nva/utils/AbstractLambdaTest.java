@@ -27,6 +27,7 @@ public abstract class AbstractLambdaTest {
 
     protected LambdaLogger logger = mockLambdaLogger();
 
+
     protected static Context createMockContext() {
         Context context = mock(Context.class);
         when(context.getLogger()).thenReturn(mockLambdaLogger());

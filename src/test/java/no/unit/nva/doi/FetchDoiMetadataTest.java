@@ -171,7 +171,7 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
         FetchDoiMetadata fetch = new FetchDoiMetadata(dataciteClient, crossRefClient);
         GatewayResponse response = fetch.handleRequest(createCrossRefRequest(VALID_DOI), mockLambdaContext);
         assertThat(response.getStatusCode(), is(HttpStatus.SC_OK));
-        assertThat(response.getHeaders(), hasEntry(HttpHeaders.CONTENT_LOCATION, CrossRefClient.CrossRefLink));
+        assertThat(response.getHeaders(), hasEntry(HttpHeaders.CONTENT_LOCATION, CrossRefClient.CROSSREF_LINK));
     }
 
     @Test

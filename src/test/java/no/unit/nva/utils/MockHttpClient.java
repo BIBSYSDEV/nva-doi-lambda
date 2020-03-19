@@ -23,6 +23,23 @@ public class MockHttpClient<R> extends HttpClient {
         this.response = response;
     }
 
+    // T must be the same with R
+    @Override
+    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
+                                                            BodyHandler<T> responseBodyHandler) {
+
+        CompletableFuture<HttpResponse<T>> result = CompletableFuture.completedFuture(
+            ((HttpResponse<T>) response));
+        return result;
+    }
+
+    @Override
+    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
+                                                            BodyHandler<T> responseBodyHandler,
+                                                            PushPromiseHandler<T> pushPromiseHandler) {
+        return null;
+    }
+
     @Override
     public Optional<CookieHandler> cookieHandler() {
         return Optional.empty();
@@ -70,23 +87,6 @@ public class MockHttpClient<R> extends HttpClient {
 
     @Override
     public <T> HttpResponse<T> send(HttpRequest request, BodyHandler<T> responseBodyHandler) {
-        return null;
-    }
-
-    // T must be the same with R
-    @Override
-    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
-                                                            BodyHandler<T> responseBodyHandler) {
-
-        CompletableFuture<HttpResponse<T>> result = CompletableFuture.completedFuture(
-            ((HttpResponse<T>) response));
-        return result;
-    }
-
-    @Override
-    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
-                                                            BodyHandler<T> responseBodyHandler,
-                                                            PushPromiseHandler<T> pushPromiseHandler) {
         return null;
     }
 }

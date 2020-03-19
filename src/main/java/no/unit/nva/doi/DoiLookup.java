@@ -1,17 +1,14 @@
 package no.unit.nva.doi;
 
-import java.net.URL;
-
 public class DoiLookup {
 
-    private URL doiUrl;
+    private String doi;
 
-    public URL getDoiUrl() {
-        return doiUrl;
+    public String getDoi() {
+        return doi;
     }
 
-    public void setDoiUrl(URL doiUrl) {
-        this.doiUrl = doiUrl;
+    public void setDoi(String doi) {
+        this.doi = doi;
     }
-
 }

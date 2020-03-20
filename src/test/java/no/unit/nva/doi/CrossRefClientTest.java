@@ -4,6 +4,7 @@ import static no.unit.nva.doi.CrossRefClient.WORKS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,7 +12,6 @@ import java.net.http.HttpClient;
 import java.util.Optional;
 import no.bibsys.aws.tools.IoUtils;
 import no.unit.nva.utils.AbstractLambdaTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -78,8 +78,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
         throws URISyntaxException {
         CrossRefClient crossRefClient = crossRefClientReceives500();
         Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(FetchResult::getJson);
-        Assertions.assertTrue(result.isEmpty());
-        //assertThat(result.isEmpty(), is(true));
+        assertTrue(result.isEmpty());
     }
 
     private void targetURlReturnsAValidUrlForDoiStrings(String doiPrefix)

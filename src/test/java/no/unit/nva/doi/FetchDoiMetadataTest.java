@@ -195,7 +195,8 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
         FetchDoiMetadata fetch = new FetchDoiMetadata(dataciteClient, crossRefClient);
         GatewayResponse response = fetch.handleRequest(createCrossRefRequest(VALID_DOI), mockLambdaContext);
         assertThat(response.getStatusCode(), is(HttpStatus.SC_OK));
-        assertThat(response.getHeaders(), hasEntry(HttpHeaders.CONTENT_LOCATION, DataciteClient.DataciteBaseUrlString));
+        assertThat(response.getHeaders(),
+            hasEntry(HttpHeaders.CONTENT_LOCATION, DataciteClient.DATACITE_BASE_URL_STRING));
     }
 
     @Test
@@ -258,7 +259,7 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
     private DataciteClient dataciteClientWithSuccessfulResponse() throws IOException {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
-            .thenReturn(new FetchResult(DataciteClient.DataciteBaseUrlString, DATACITE_RESPONSE));
+            .thenReturn(new FetchResult(DataciteClient.DATACITE_BASE_URL_STRING, DATACITE_RESPONSE));
         return dataciteClient;
     }
 }

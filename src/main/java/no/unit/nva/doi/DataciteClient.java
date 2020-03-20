@@ -8,11 +8,11 @@ import java.util.Scanner;
 
 public class DataciteClient {
 
-    public static final String DataciteBaseUrlString = "https://data.datacite.org";
+    public static final String DATACITE_BASE_URL_STRING = "https://data.datacite.org";
 
     protected URL createRequestUrl(String doiUrlString, DataciteContentType dataciteContentType)
         throws MalformedURLException {
-        URL dataciteBaseUrl = new URL(DataciteBaseUrlString);
+        URL dataciteBaseUrl = new URL(DATACITE_BASE_URL_STRING);
         URL doiUrl = new URL(doiUrlString);
         return new URL(dataciteBaseUrl,
                        String.join("",
@@ -23,7 +23,7 @@ public class DataciteClient {
     public FetchResult fetchMetadata(String doiUrlString, DataciteContentType dataciteContentType)
         throws IOException {
         String json = readStringFromUrl(createRequestUrl(doiUrlString, dataciteContentType));
-        return new FetchResult(DataciteBaseUrlString, json);
+        return new FetchResult(DATACITE_BASE_URL_STRING, json);
     }
 
     protected String readStringFromUrl(URL url) throws IOException {

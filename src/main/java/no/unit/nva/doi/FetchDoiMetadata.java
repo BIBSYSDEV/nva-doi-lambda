@@ -95,8 +95,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     }
 
     private Map<String, String> addContentLocationToHeaders(FetchResult doiMetadata) {
-        return Collections
-            .singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
+        return Collections.singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
     }
 
     private void init(Context context) {

@@ -96,7 +96,7 @@ Resources:
               title: Lookup DOI URL
               type: object
               properties:
-                doiUrl:
+                doi:
                   type: string
                   description: DOI URL
               required:
@@ -104,7 +104,7 @@ Resources:
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .
+      CodeUri: ./build/libs/nva-doi-lambda-1.0-SNAPSHOT.jar
       Handler: no.unit.nva.doi.FetchDoiMetadata::handleRequest
       Runtime: java11
       MemorySize: 512

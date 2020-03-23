@@ -55,7 +55,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
     @DisplayName("fetchDataForDoi returns an Optional with a json object for an existing URL")
     public void fetchDataForDoiReturnAnOptionalWithAJsonObjectForAnExistingUrl()
         throws IOException, URISyntaxException {
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(FetchResult::getJson);
+        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(MetadataAndContentLocation::getJson);
         String expected = IoUtils.resourceAsString(CrossRefSamplePath);
         assertThat(result.isPresent(), is(true));
         assertThat(result.get(), is(equalTo(expected)));
@@ -68,7 +68,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
 
         CrossRefClient crossRefClient = crossRefClientReceives404();
 
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(FetchResult::getJson);
+        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(MetadataAndContentLocation::getJson);
         assertThat(result.isEmpty(), is(true));
     }
 
@@ -77,7 +77,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
     public void fetchDataForDoiReturnAnEmptyOptionalForAnUnknownError()
         throws URISyntaxException {
         CrossRefClient crossRefClient = crossRefClientReceives500();
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(FetchResult::getJson);
+        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString).map(MetadataAndContentLocation::getJson);
         assertTrue(result.isEmpty());
     }
 

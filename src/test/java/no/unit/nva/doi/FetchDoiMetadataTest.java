@@ -259,7 +259,7 @@ public class FetchDoiMetadataTest extends AbstractLambdaTest {
     private DataciteClient dataciteClientWithSuccessfulResponse() throws IOException {
         DataciteClient dataciteClient = Mockito.mock(DataciteClient.class);
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
-            .thenReturn(new FetchResult(DataciteClient.DATACITE_BASE_URL_STRING, DATACITE_RESPONSE));
+            .thenReturn(new MetadataAndContentLocation(DataciteClient.DATACITE_BASE_URL_STRING, DATACITE_RESPONSE));
         return dataciteClient;
     }
 }

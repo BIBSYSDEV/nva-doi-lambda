@@ -24,7 +24,7 @@ public class DataciteClientTest {
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenCallRealMethod();
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenReturn(new String());
 
-        FetchResult metadata = dataciteClient
+        MetadataAndContentLocation metadata = dataciteClient
             .fetchMetadata(EXAMPLE_URL, DataciteContentType.CITEPROC_JSON);
 
         Assert.assertNotNull(metadata);

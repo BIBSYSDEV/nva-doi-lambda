@@ -16,7 +16,6 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.HttpHeaders;
@@ -30,7 +29,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     public static final String MISSING_ACCEPT_HEADER = "Missing Accept header";
     public static final Pattern DOI_URL_PATTERN =
         Pattern.compile("^https?://(dx\\.)?doi\\.org/(10(?:\\.[0-9]+)+)/(.+)$",
-                        Pattern.CASE_INSENSITIVE);
+            Pattern.CASE_INSENSITIVE);
 
     public static final Pattern DOI_STRING_PATTERN =
         Pattern.compile("^(doi:)?(10(?:\\.[0-9]+)+)/(.+)$", Pattern.CASE_INSENSITIVE);
@@ -81,8 +80,8 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             FetchResult doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
             Map<String, String> contentHeaderMap = addContentLocationToHeaders(doiMetadata);
             return new GatewayResponse(doiMetadata.getJson(), OK.getStatusCode(),
-                                       dataciteContentType.getContentType(),
-                                       contentHeaderMap);
+                dataciteContentType.getContentType(),
+                contentHeaderMap);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             logger.log(e.getMessage());
@@ -104,7 +103,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     }
 
     private FetchResult lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)
-        throws IOException, InterruptedException, ExecutionException, URISyntaxException {
+        throws IOException, URISyntaxException {
         System.out.println("getDoiMetadata(doi:" + doiUrl + ")");
         Optional<FetchResult> crossRefResult = crossRefClient.fetchDataForDoi(doiUrl);
         if (crossRefResult.isEmpty()) {

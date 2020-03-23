@@ -77,7 +77,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         }
 
         try {
-            FetchResult doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
+            MetadataAndContentLocation doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
             Map<String, String> contentHeaderMap = addContentLocationToHeaders(doiMetadata);
             return new GatewayResponse(doiMetadata.getJson(), OK.getStatusCode(),
                 dataciteContentType.getContentType(),
@@ -93,7 +93,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         }
     }
 
-    private Map<String, String> addContentLocationToHeaders(FetchResult doiMetadata) {
+    private Map<String, String> addContentLocationToHeaders(MetadataAndContentLocation doiMetadata) {
         return Collections.singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
     }
 
@@ -102,10 +102,10 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         this.crossRefClient.setLogger(logger);
     }
 
-    private FetchResult lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)
+    private MetadataAndContentLocation lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)
         throws IOException, URISyntaxException {
         System.out.println("getDoiMetadata(doi:" + doiUrl + ")");
-        Optional<FetchResult> crossRefResult = crossRefClient.fetchDataForDoi(doiUrl);
+        Optional<MetadataAndContentLocation> crossRefResult = crossRefClient.fetchDataForDoi(doiUrl);
         if (crossRefResult.isEmpty()) {
             return dataciteClient.fetchMetadata(doiUrl, dataciteContentType);
         } else {

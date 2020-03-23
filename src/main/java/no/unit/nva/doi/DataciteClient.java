@@ -20,10 +20,10 @@ public class DataciteClient {
                                    doiUrl.getPath()));
     }
 
-    public FetchResult fetchMetadata(String doiUrlString, DataciteContentType dataciteContentType)
+    public MetadataAndContentLocation fetchMetadata(String doiUrlString, DataciteContentType dataciteContentType)
         throws IOException {
         String json = readStringFromUrl(createRequestUrl(doiUrlString, dataciteContentType));
-        return new FetchResult(DATACITE_BASE_URL_STRING, json);
+        return new MetadataAndContentLocation(DATACITE_BASE_URL_STRING, json);
     }
 
     protected String readStringFromUrl(URL url) throws IOException {

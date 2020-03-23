@@ -39,16 +39,24 @@ public class CrossRefClient {
         this.httpClient = httpClient;
     }
 
-    public Optional<FetchResult> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
+    /**
+     * The method returns the object containing the metadata (title,author etc) of the publication with the specific
+     * DOI, and the source where the metadata were acquired.
+     *
+     * @param doiIdentifier a valid doi identifier or URL.
+     * @return FetchResult contains the json object and the location from where it was fetched (Datacite, Crossref).
+     * @throws URISyntaxException when the input cannot be transformed to a valid URI.
+     */
+    public Optional<MetadataAndContentLocation> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
         URI targetUri = createUrlToCrossRef(doiIdentifier);
         return fetchJson(targetUri);
     }
 
-    private Optional<FetchResult> fetchJson(URI doiUri) {
+    private Optional<MetadataAndContentLocation> fetchJson(URI doiUri) {
         HttpRequest request = createRequest(doiUri);
         try {
             return Optional.ofNullable(getFromWeb(request))
-                           .map(json -> new FetchResult(CROSSREF_LINK, json));
+                           .map(json -> new MetadataAndContentLocation(CROSSREF_LINK, json));
         } catch (InterruptedException |
             ExecutionException |
             NotFoundException |

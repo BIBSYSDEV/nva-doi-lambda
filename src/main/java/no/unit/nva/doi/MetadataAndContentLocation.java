@@ -1,11 +1,11 @@
 package no.unit.nva.doi;
 
-public class FetchResult {
+public class MetadataAndContentLocation {
 
     private final String contentHeader;
     private final String json;
 
-    public FetchResult(String contentHeader, String json) {
+    public MetadataAndContentLocation(String contentHeader, String json) {
         this.contentHeader = contentHeader;
         this.json = json;
     }

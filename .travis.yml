@@ -9,7 +9,7 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 before_install:
-  - wget -O codacy.sh  https://coverage.codacy.com/get.sh
+  - wget -O codacy.sh https://coverage.codacy.com/get.sh
   - chmod +x codacy.sh
 script:
   - ./gradlew build jacocoTestReport

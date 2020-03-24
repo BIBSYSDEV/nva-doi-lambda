@@ -13,7 +13,6 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install libc6
 install:
-  - wget -O codacy.sh https://coverage.codacy.com/get.sh
   - chmod +x codacy.sh
 script:
   - ./gradlew build jacocoTestReport

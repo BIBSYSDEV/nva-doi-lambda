@@ -74,7 +74,7 @@ if [ -z "$CODACY_REPORTER_VERSION" ]; then
 fi
 
 download_url() {
-    grep browser_download_url | grep $1 | cut -d '"' -f 4
+    grep browser_download_url | grep $1 | grep jar| cut -d '"' -f 4
 }
 
 download_using_wget_or_curl() {

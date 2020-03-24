@@ -14,5 +14,5 @@ install:
   - chmod +x codacy.sh
 script:
   - ./gradlew build jacocoTestReport
-after_success:
+after_script:
   - ./codacy.sh

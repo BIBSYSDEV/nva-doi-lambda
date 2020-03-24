@@ -9,6 +9,8 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+before_install:
+  - sudo apt-get install glibc
 install:
   - wget -O codacy.sh https://coverage.codacy.com/get.sh
   - chmod +x codacy.sh

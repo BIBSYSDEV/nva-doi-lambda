@@ -19,5 +19,5 @@ script:
   - ./gradlew build jacocoTestReport
   - echo $LATEST_VERSION
 after_script:
-  - bash codacy.sh
-  - echo $LATEST_VERSION
+  - curl -Ls -o codacy-coverage-reporter "https://dl.bintray.com/codacy/Binaries/${LATEST_VERSION}/codacy-coverage-reporter-linux"
+  - chmod +x codacy-coverage-reporter

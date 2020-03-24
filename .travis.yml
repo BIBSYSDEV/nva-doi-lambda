@@ -10,7 +10,8 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 before_install:
-  - sudo apt-get install glibc
+  - sudo apt-get update
+  - sudo apt-get install libc6
 install:
   - wget -O codacy.sh https://coverage.codacy.com/get.sh
   - chmod +x codacy.sh

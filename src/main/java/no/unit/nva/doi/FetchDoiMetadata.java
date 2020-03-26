@@ -58,7 +58,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
-        init(context);
         DoiLookup doiLookup;
         DataciteContentType dataciteContentType;
 
@@ -95,11 +94,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
     private Map<String, String> addContentLocationToHeaders(MetadataAndContentLocation doiMetadata) {
         return Collections.singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
-    }
-
-    private void init(Context context) {
-        this.logger = context.getLogger();
-        this.crossRefClient.setLogger(logger);
     }
 
     private MetadataAndContentLocation lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)

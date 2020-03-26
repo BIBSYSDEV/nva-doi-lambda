@@ -49,7 +49,7 @@ public class CrossRefClient {
      * DOI, and the source where the metadata were acquired.
      *
      * @param doiIdentifier a doi identifier or URL.
-     * @return FetchResult contains the json object and the location from where it was fetched (Datacite, Crossref).
+     * @return FetchResult contains the JSON object and the location from where it was fetched.
      * @throws URISyntaxException when the input cannot be transformed to a valid URI.
      */
     public Optional<MetadataAndContentLocation> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {

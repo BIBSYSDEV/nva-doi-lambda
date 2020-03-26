@@ -24,8 +24,6 @@ public abstract class AbstractLambdaTest {
 
     protected final Context mockLambdaContext = createMockContext();
 
-    protected LambdaLogger logger = mockLambdaLogger();
-
     protected static Context createMockContext() {
         Context context = mock(Context.class);
         when(context.getLogger()).thenReturn(mockLambdaLogger());
@@ -56,17 +54,13 @@ public abstract class AbstractLambdaTest {
         HttpResponseStatus404<String> errorResponse = new HttpResponseStatus404<>(
             ERROR_MESSAGE);
         MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
-        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
-        crossRefClient.setLogger(logger);
-        return crossRefClient;
+        return new CrossRefClient(mockHttpClient);
     }
 
     protected CrossRefClient crossRefClientReceives500() {
         HttpResponseStatus500<String> errorResponse = new HttpResponseStatus500<>(
             ERROR_MESSAGE);
         MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
-        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
-        crossRefClient.setLogger(logger);
-        return crossRefClient;
+        return new CrossRefClient(mockHttpClient);
     }
 }

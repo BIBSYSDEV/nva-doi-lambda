@@ -27,7 +27,6 @@ public class CrossRefClientTest extends AbstractLambdaTest {
     void before() throws IOException {
         HttpClient httpClient = mockHttpClientWithNonEmptyResponse();
         crossRefClient = new CrossRefClient(httpClient);
-        crossRefClient.setLogger(logger);
     }
 
     @DisplayName("createTargetUrl returns a valid Url for DOI strings that are not DOI URLs")

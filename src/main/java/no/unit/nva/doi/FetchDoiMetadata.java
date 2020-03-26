@@ -7,7 +7,6 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static no.unit.nva.doi.GatewayResponse.errorGatewayResponse;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,7 +42,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
     private final transient DataciteClient dataciteClient;
     private transient CrossRefClient crossRefClient;
-    private transient LambdaLogger logger;
 
     public FetchDoiMetadata() {
         this(new DataciteClient(), new CrossRefClient());
@@ -82,11 +80,9 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
                 contentHeaderMap);
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            logger.log(e.getMessage());
             return errorGatewayResponse(e.getMessage(), SERVICE_UNAVAILABLE.getStatusCode());
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            logger.log(e.getMessage());
             return errorGatewayResponse(e.getMessage(), INTERNAL_SERVER_ERROR.getStatusCode());
         }
     }

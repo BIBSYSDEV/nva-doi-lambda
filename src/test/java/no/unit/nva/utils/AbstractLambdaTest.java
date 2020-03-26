@@ -15,10 +15,9 @@ import no.unit.nva.doi.CrossRefClient;
 
 public abstract class AbstractLambdaTest {
 
-    public static final String DoiString = "10.1007/s00115-004-1822-4";
-    public static final String DoiStringDoiPrefix = "doi:10.1007/s00115-004-1822-4";
-    public static final String DoiDxUrlPrefix = "https://dx.doi.org";
-    public static final String DoiUrlPrefix = "https://doi.org";
+    public static final String DOI_STRING = "10.1007/s00115-004-1822-4";
+    public static final String DOI_DX_URL_PREFIX = "https://dx.doi.org";
+    public static final String DOI_URL_PREFIX = "https://doi.org";
 
     public static final Path CrossRefSamplePath = Paths.get("crossRefSample.json");
     public static final String ERROR_MESSAGE = "404 error message";
@@ -26,7 +25,6 @@ public abstract class AbstractLambdaTest {
     protected final Context mockLambdaContext = createMockContext();
 
     protected LambdaLogger logger = mockLambdaLogger();
-
 
     protected static Context createMockContext() {
         Context context = mock(Context.class);

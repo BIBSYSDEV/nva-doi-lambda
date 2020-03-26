@@ -10,6 +10,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.ws.rs.BadRequestException;
@@ -28,6 +29,10 @@ public class CrossRefClient {
     public static final int TIMEOUT_DURATION = 30;
     public static final String COULD_NOT_FIND_ENTRY_WITH_DOI = "Could not find entry with DOI:";
     public static final String UNKNOWN_ERROR_MESSAGE = "Something went wrong. StatusCode:";
+
+    private static final String DOI_EXAMPLES = "10.1000/182, https://doi.org/10.1000/182";
+    public static final String ILLEGAL_DOI_MESSAGE = "Illegal DOI:%s. Valid examples:" + DOI_EXAMPLES;
+
     private final transient HttpClient httpClient;
     private transient LambdaLogger logger;
 
@@ -40,10 +45,10 @@ public class CrossRefClient {
     }
 
     /**
-     * The method returns the object containing the metadata (title,author etc) of the publication with the specific
+     * The method returns the object containing the metadata (title, author, etc.) of the publication with the specific
      * DOI, and the source where the metadata were acquired.
      *
-     * @param doiIdentifier a valid doi identifier or URL.
+     * @param doiIdentifier a doi identifier or URL.
      * @return FetchResult contains the json object and the location from where it was fetched (Datacite, Crossref).
      * @throws URISyntaxException when the input cannot be transformed to a valid URI.
      */
@@ -100,7 +105,6 @@ public class CrossRefClient {
 
     protected URI createUrlToCrossRef(String doiIdentifier)
         throws URISyntaxException {
-
         List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);
         List<String> pathSegments = composeAllPathSegments(doiPathSegments);
         return addPathSegments(pathSegments);
@@ -121,6 +125,9 @@ public class CrossRefClient {
 
     private List<String> stripHttpPartFromDoi(String doiIdentifier) {
         String path = URI.create(doiIdentifier).getPath();
+        if (Objects.isNull(path) || path.isBlank()) {
+            throw new IllegalArgumentException(ILLEGAL_DOI_MESSAGE + doiIdentifier);
+        }
         return URLEncodedUtils.parsePathSegments(path);
     }
 

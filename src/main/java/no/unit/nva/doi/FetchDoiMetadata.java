@@ -38,7 +38,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
     /**
      * Connection object handling the direct communication via http for (mock)-testing to be injected.
      */
-    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private final transient DataciteClient dataciteClient;
     private transient CrossRefClient crossRefClient;
@@ -65,7 +65,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
                 Optional.ofNullable(headers.get(HttpHeaders.ACCEPT))
                         .orElseThrow(() -> new IllegalArgumentException(MISSING_ACCEPT_HEADER))
             );
-            doiLookup = gson.fromJson((String) input.get(BODY), DoiLookup.class);
+            doiLookup = GSON.fromJson((String) input.get(BODY), DoiLookup.class);
             validate(doiLookup);
         } catch (Exception e) {
             System.out.println(e.getMessage());

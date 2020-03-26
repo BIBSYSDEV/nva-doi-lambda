@@ -26,5 +26,4 @@ public class Config {
     public void setCorsHeader(String corsHeader) {
         this.corsHeader = corsHeader;
     }
-
 }

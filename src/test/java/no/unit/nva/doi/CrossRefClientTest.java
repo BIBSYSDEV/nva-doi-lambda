@@ -4,55 +4,38 @@ import static no.unit.nva.doi.CrossRefClient.WORKS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import no.bibsys.aws.tools.IoUtils;
 import no.unit.nva.utils.AbstractLambdaTest;
-import no.unit.nva.utils.HttpResponseStatus200;
-import no.unit.nva.utils.HttpResponseStatus404;
-import no.unit.nva.utils.HttpResponseStatus500;
-import no.unit.nva.utils.MockHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class CrossRefClientTest extends AbstractLambdaTest {
 
-    public static final String DoiString = "10.1007/s00115-004-1822-4";
-    public static final String DoiDxUrlPrefix = "https://dx.doi.org";
-    public static final String DoiUrlPrefix = "https://doi.org";
-    public static final Path SampleResponsePath = Paths.get("crossRefSample.json");
-    public static final String ERROR_MESSAGE = "404 error message";
-
     private CrossRefClient crossRefClient;
-    private LambdaLogger logger = mockLambdaLogger();
+
+    public static final String ILLEGAL_DOI_STRING = "doi:" + DOI_STRING;
 
     @BeforeEach
     void before() throws IOException {
         HttpClient httpClient = mockHttpClientWithNonEmptyResponse();
         crossRefClient = new CrossRefClient(httpClient);
-        crossRefClient.setLogger(logger);
-    }
-
-    private HttpClient mockHttpClientWithNonEmptyResponse() throws IOException {
-        String responseBody = IoUtils.resourceAsString(SampleResponsePath);
-        HttpResponseStatus200<String> response = new HttpResponseStatus200<>(responseBody);
-        return new MockHttpClient<>(response);
     }
 
     @DisplayName("createTargetUrl returns a valid Url for DOI strings that are not DOI URLs")
     @Test
     public void createTargetUrlReturnsAValidUrlForDoiStringThatIsNotDoiURL()
         throws URISyntaxException {
-        String expected = String.join("/", CrossRefClient.CROSSREF_LINK, WORKS, DoiString);
+        String expected = String.join("/", CrossRefClient.CROSSREF_LINK, WORKS, DOI_STRING);
 
-        String output = crossRefClient.createUrlToCrossRef(DoiString).toString();
+        String output = crossRefClient.createUrlToCrossRef(DOI_STRING).toString();
         assertThat(output, is(equalTo(expected)));
     }
 
@@ -60,22 +43,22 @@ public class CrossRefClientTest extends AbstractLambdaTest {
     @Test
     public void createTargetUrlReturnsAValidUrlForDoiStringThatIsDoiDxUrl()
         throws URISyntaxException {
-        targetURlReturnsAValidUrlForDoiStrings(DoiDxUrlPrefix);
+        targetURlReturnsAValidUrlForDoiStrings(DOI_DX_URL_PREFIX);
     }
 
     @DisplayName("createTargetUrl returns a valid Url for DOI strings that are DOI URLs")
     @Test
     public void createTargetUrlReturnsAValidUrlForDoiStringThatIsDoiURL()
         throws URISyntaxException {
-        targetURlReturnsAValidUrlForDoiStrings(DoiUrlPrefix);
+        targetURlReturnsAValidUrlForDoiStrings(DOI_URL_PREFIX);
     }
 
     @Test
     @DisplayName("fetchDataForDoi returns an Optional with a json object for an existing URL")
     public void fetchDataForDoiReturnAnOptionalWithAJsonObjectForAnExistingUrl()
         throws IOException, URISyntaxException {
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString);
-        String expected = IoUtils.resourceAsString(SampleResponsePath);
+        Optional<String> result = crossRefClient.fetchDataForDoi(DOI_STRING).map(MetadataAndContentLocation::getJson);
+        String expected = IoUtils.resourceAsString(CrossRefSamplePath);
         assertThat(result.isPresent(), is(true));
         assertThat(result.get(), is(equalTo(expected)));
     }
@@ -87,7 +70,7 @@ public class CrossRefClientTest extends AbstractLambdaTest {
 
         CrossRefClient crossRefClient = crossRefClientReceives404();
 
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString);
+        Optional<String> result = crossRefClient.fetchDataForDoi(DOI_STRING).map(MetadataAndContentLocation::getJson);
         assertThat(result.isEmpty(), is(true));
     }
 
@@ -96,36 +79,21 @@ public class CrossRefClientTest extends AbstractLambdaTest {
     public void fetchDataForDoiReturnAnEmptyOptionalForAnUnknownError()
         throws URISyntaxException {
         CrossRefClient crossRefClient = crossRefClientReceives500();
-        Optional<String> result = crossRefClient.fetchDataForDoi(DoiString);
-        assertThat(result.isEmpty(), is(true));
+        Optional<String> result = crossRefClient.fetchDataForDoi(DOI_STRING).map(MetadataAndContentLocation::getJson);
+        assertTrue(result.isEmpty());
     }
 
-    private CrossRefClient crossRefClientReceives404() {
-        HttpResponseStatus404<String> errorResponse = new HttpResponseStatus404<String>(
-            ERROR_MESSAGE);
-        MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
-        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
-        crossRefClient.setLogger(logger);
-        return crossRefClient;
-    }
-
-    private CrossRefClient crossRefClientReceives500() {
-        HttpResponseStatus500<String> errorResponse = new HttpResponseStatus500<String>(
-            ERROR_MESSAGE);
-        MockHttpClient<String> mockHttpClient = new MockHttpClient<>(errorResponse);
-        CrossRefClient crossRefClient = new CrossRefClient(mockHttpClient);
-        crossRefClient.setLogger(logger);
-        return crossRefClient;
+    @Test
+    public void fetchDataForDoiThrowsExceptionWhenDoiHasInvalidFormat() {
+        assertThrows(IllegalArgumentException.class, () -> crossRefClient.fetchDataForDoi(ILLEGAL_DOI_STRING));
     }
 
     private void targetURlReturnsAValidUrlForDoiStrings(String doiPrefix)
         throws URISyntaxException {
-        String doiURL = String.join("/", doiPrefix, DoiString);
-
-        String expected = String.join("/", CrossRefClient.CROSSREF_LINK, WORKS, DoiString);
+        String doiURL = String.join("/", doiPrefix, DOI_STRING);
+        String expected = String.join("/", CrossRefClient.CROSSREF_LINK, WORKS, DOI_STRING);
 
         String output = crossRefClient.createUrlToCrossRef(doiURL).toString();
         assertThat(output, is(equalTo(expected)));
     }
-
 }

@@ -96,7 +96,7 @@ Resources:
               title: Lookup DOI URL
               type: object
               properties:
-                doiUrl:
+                doi:
                   type: string
                   description: DOI URL
               required:

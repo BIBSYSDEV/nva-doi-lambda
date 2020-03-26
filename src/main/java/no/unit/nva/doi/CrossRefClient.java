@@ -1,6 +1,5 @@
 package no.unit.nva.doi;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -10,6 +9,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.ws.rs.BadRequestException;
@@ -28,8 +28,12 @@ public class CrossRefClient {
     public static final int TIMEOUT_DURATION = 30;
     public static final String COULD_NOT_FIND_ENTRY_WITH_DOI = "Could not find entry with DOI:";
     public static final String UNKNOWN_ERROR_MESSAGE = "Something went wrong. StatusCode:";
+
+    private static final String DOI_EXAMPLES = "10.1000/182, https://doi.org/10.1000/182";
+    public static final String ILLEGAL_DOI_MESSAGE = "Illegal DOI:%s. Valid examples:" + DOI_EXAMPLES;
+    public static final String FETCH_ERROR = "CrossRefClient failed while trying to fetch:";
+
     private final transient HttpClient httpClient;
-    private transient LambdaLogger logger;
 
     public CrossRefClient() {
         this(HttpClient.newHttpClient());
@@ -39,24 +43,33 @@ public class CrossRefClient {
         this.httpClient = httpClient;
     }
 
-    public Optional<String> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
-        URI targetUri = createUrlToCrossRef(doiIdentifier);
+    /**
+     * The method returns the object containing the metadata (title, author, etc.) of the publication with the specific
+     * DOI, and the source where the metadata were acquired.
+     *
+     * @param doi a doi identifier or URL.
+     * @return FetchResult contains the JSON object and the location from where it was fetched.
+     * @throws URISyntaxException when the input cannot be transformed to a valid URI.
+     */
+    public Optional<MetadataAndContentLocation> fetchDataForDoi(String doi) throws URISyntaxException {
+        URI targetUri = createUrlToCrossRef(doi);
         return fetchJson(targetUri);
     }
 
-    private Optional<String> fetchJson(URI doiUri) {
+    private Optional<MetadataAndContentLocation> fetchJson(URI doiUri) {
         HttpRequest request = createRequest(doiUri);
         try {
-            return Optional.ofNullable(getFromWeb(request));
+            return Optional.ofNullable(getFromWeb(request))
+                           .map(json -> new MetadataAndContentLocation(CROSSREF_LINK, json));
         } catch (InterruptedException |
             ExecutionException |
             NotFoundException |
             BadRequestException e) {
+            String details = FETCH_ERROR + doiUri;
+            System.out.println(details);
             System.out.print(e.getMessage());
-            logger.log(e.getMessage());
             return Optional.empty();
         }
-
     }
 
     private HttpRequest createRequest(URI doiUri) {
@@ -90,10 +103,9 @@ public class CrossRefClient {
         return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
     }
 
-    protected URI createUrlToCrossRef(String doiIdentifier)
+    protected URI createUrlToCrossRef(String doi)
         throws URISyntaxException {
-
-        List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);
+        List<String> doiPathSegments = stripHttpPartFromDoi(doi);
         List<String> pathSegments = composeAllPathSegments(doiPathSegments);
         return addPathSegments(pathSegments);
     }
@@ -111,13 +123,11 @@ public class CrossRefClient {
         return pathSegments;
     }
 
-    private List<String> stripHttpPartFromDoi(String doiIdentifier) {
-        String path = URI.create(doiIdentifier).getPath();
+    private List<String> stripHttpPartFromDoi(String doi) {
+        String path = URI.create(doi).getPath();
+        if (Objects.isNull(path) || path.isBlank()) {
+            throw new IllegalArgumentException(ILLEGAL_DOI_MESSAGE + doi);
+        }
         return URLEncodedUtils.parsePathSegments(path);
     }
-
-    public void setLogger(LambdaLogger logger) {
-        this.logger = logger;
-    }
-
 }

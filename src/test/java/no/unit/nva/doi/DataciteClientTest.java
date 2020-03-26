@@ -20,13 +20,11 @@ public class DataciteClientTest {
     @Test
     public void testMockUrl() throws IOException {
         DataciteClient dataciteClient = mock(DataciteClient.class);
-        when(dataciteClient.createRequestUrl(anyString(), any(DataciteContentType.class)))
-            .thenCallRealMethod();
-        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class)))
-            .thenCallRealMethod();
+        when(dataciteClient.createRequestUrl(anyString(), any(DataciteContentType.class))).thenCallRealMethod();
+        when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenCallRealMethod();
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenReturn(new String());
 
-        String metadata = dataciteClient
+        MetadataAndContentLocation metadata = dataciteClient
             .fetchMetadata(EXAMPLE_URL, DataciteContentType.CITEPROC_JSON);
 
         Assert.assertNotNull(metadata);
@@ -45,8 +43,7 @@ public class DataciteClientTest {
     public void testEmptyResponseUrl() throws IOException {
         DataciteClient dataciteClient = mock(DataciteClient.class);
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenCallRealMethod();
-        String stringFromUrl = dataciteClient
-            .readStringFromUrl(Paths.get(EMPTY_RESPONSE_FILE).toUri().toURL());
+        String stringFromUrl = dataciteClient.readStringFromUrl(Paths.get(EMPTY_RESPONSE_FILE).toUri().toURL());
         Assert.assertEquals(new String(), stringFromUrl);
     }
 }

@@ -41,5 +41,4 @@ public class GatewayResponseTest {
         assertTrue(
             gatewayResponse1.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
     }
-
 }

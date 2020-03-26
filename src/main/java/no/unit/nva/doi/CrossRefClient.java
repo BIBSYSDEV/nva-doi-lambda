@@ -1,6 +1,5 @@
 package no.unit.nva.doi;
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -35,7 +34,6 @@ public class CrossRefClient {
     public static final String FETCH_ERROR = "CrossRefClient failed while trying to fetch:";
 
     private final transient HttpClient httpClient;
-    private transient LambdaLogger logger;
 
     public CrossRefClient() {
         this(HttpClient.newHttpClient());
@@ -70,8 +68,6 @@ public class CrossRefClient {
             String details = FETCH_ERROR + doiUri;
             System.out.println(details);
             System.out.print(e.getMessage());
-            logger.log(details);
-            logger.log(e.getMessage());
             return Optional.empty();
         }
     }
@@ -133,9 +129,5 @@ public class CrossRefClient {
             throw new IllegalArgumentException(ILLEGAL_DOI_MESSAGE + doi);
         }
         return URLEncodedUtils.parsePathSegments(path);
-    }
-
-    public void setLogger(LambdaLogger logger) {
-        this.logger = logger;
     }
 }

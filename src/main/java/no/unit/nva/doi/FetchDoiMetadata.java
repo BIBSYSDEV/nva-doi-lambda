@@ -77,7 +77,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         try {
             MetadataAndContentLocation doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
-            Map<String, String> contentHeaderMap = addContentLocationToHeaders(doiMetadata);
+            Map<String, String> contentHeaderMap = contentLocationAsHeaderEntry(doiMetadata);
             return new GatewayResponse(doiMetadata.getJson(), OK.getStatusCode(),
                 dataciteContentType.getContentType(),
                 contentHeaderMap);
@@ -92,7 +92,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
         }
     }
 
-    private Map<String, String> addContentLocationToHeaders(MetadataAndContentLocation doiMetadata) {
+    private Map<String, String> contentLocationAsHeaderEntry(MetadataAndContentLocation doiMetadata) {
         return Collections.singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
     }
 

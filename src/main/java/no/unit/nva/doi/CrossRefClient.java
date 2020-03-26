@@ -48,12 +48,12 @@ public class CrossRefClient {
      * The method returns the object containing the metadata (title, author, etc.) of the publication with the specific
      * DOI, and the source where the metadata were acquired.
      *
-     * @param doiIdentifier a doi identifier or URL.
+     * @param doi a doi identifier or URL.
      * @return FetchResult contains the JSON object and the location from where it was fetched.
      * @throws URISyntaxException when the input cannot be transformed to a valid URI.
      */
-    public Optional<MetadataAndContentLocation> fetchDataForDoi(String doiIdentifier) throws URISyntaxException {
-        URI targetUri = createUrlToCrossRef(doiIdentifier);
+    public Optional<MetadataAndContentLocation> fetchDataForDoi(String doi) throws URISyntaxException {
+        URI targetUri = createUrlToCrossRef(doi);
         return fetchJson(targetUri);
     }
 
@@ -103,9 +103,9 @@ public class CrossRefClient {
         return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
     }
 
-    protected URI createUrlToCrossRef(String doiIdentifier)
+    protected URI createUrlToCrossRef(String doi)
         throws URISyntaxException {
-        List<String> doiPathSegments = stripHttpPartFromDoi(doiIdentifier);
+        List<String> doiPathSegments = stripHttpPartFromDoi(doi);
         List<String> pathSegments = composeAllPathSegments(doiPathSegments);
         return addPathSegments(pathSegments);
     }
@@ -123,10 +123,10 @@ public class CrossRefClient {
         return pathSegments;
     }
 
-    private List<String> stripHttpPartFromDoi(String doiIdentifier) {
-        String path = URI.create(doiIdentifier).getPath();
+    private List<String> stripHttpPartFromDoi(String doi) {
+        String path = URI.create(doi).getPath();
         if (Objects.isNull(path) || path.isBlank()) {
-            throw new IllegalArgumentException(ILLEGAL_DOI_MESSAGE + doiIdentifier);
+            throw new IllegalArgumentException(ILLEGAL_DOI_MESSAGE + doi);
         }
         return URLEncodedUtils.parsePathSegments(path);
     }

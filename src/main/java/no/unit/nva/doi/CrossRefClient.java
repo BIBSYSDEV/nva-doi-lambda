@@ -32,6 +32,7 @@ public class CrossRefClient {
 
     private static final String DOI_EXAMPLES = "10.1000/182, https://doi.org/10.1000/182";
     public static final String ILLEGAL_DOI_MESSAGE = "Illegal DOI:%s. Valid examples:" + DOI_EXAMPLES;
+    public static final String FETCH_ERROR = "CrossRefClient failed while trying to fetch:";
 
     private final transient HttpClient httpClient;
     private transient LambdaLogger logger;
@@ -66,7 +67,10 @@ public class CrossRefClient {
             ExecutionException |
             NotFoundException |
             BadRequestException e) {
+            String details = FETCH_ERROR + doiUri;
+            System.out.println(details);
             System.out.print(e.getMessage());
+            logger.log(details);
             logger.log(e.getMessage());
             return Optional.empty();
         }

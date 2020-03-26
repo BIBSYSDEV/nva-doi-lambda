@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -77,7 +76,7 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
 
         try {
             MetadataAndContentLocation doiMetadata = lookupDoiMetadata(doiLookup.getDoi(), dataciteContentType);
-            Map<String, String> contentHeaderMap = contentLocationAsHeaderEntry(doiMetadata);
+            Map<String, String> contentHeaderMap = doiMetadata.contentLocationAsHeaderEntry();
             return new GatewayResponse(doiMetadata.getJson(), OK.getStatusCode(),
                 dataciteContentType.getContentType(),
                 contentHeaderMap);
@@ -90,10 +89,6 @@ public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, Gat
             logger.log(e.getMessage());
             return errorGatewayResponse(e.getMessage(), INTERNAL_SERVER_ERROR.getStatusCode());
         }
-    }
-
-    private Map<String, String> contentLocationAsHeaderEntry(MetadataAndContentLocation doiMetadata) {
-        return Collections.singletonMap(HttpHeaders.CONTENT_LOCATION, doiMetadata.getContentHeader());
     }
 
     private MetadataAndContentLocation lookupDoiMetadata(String doiUrl, DataciteContentType dataciteContentType)

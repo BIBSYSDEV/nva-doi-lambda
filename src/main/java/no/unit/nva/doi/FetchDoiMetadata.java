@@ -23,7 +23,7 @@ import javax.ws.rs.core.HttpHeaders;
  */
 public class FetchDoiMetadata implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    public static final String INVALID_DOI_URL = "The property 'doi_url' is not a valid DOI";
+    public static final String INVALID_DOI_URL = "The property 'doi' is not a valid DOI";
     public static final String MISSING_ACCEPT_HEADER = "Missing Accept header";
     public static final Pattern DOI_URL_PATTERN =
         Pattern.compile("^https?://(dx\\.)?doi\\.org/(10(?:\\.[0-9]+)+)/(.+)$",

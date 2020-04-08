@@ -1,10 +1,10 @@
 package no.unit.nva.doi;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
 
 public class DataciteContentTypeTest {
 
@@ -16,7 +16,6 @@ public class DataciteContentTypeTest {
 
         DataciteContentType dataciteContentType = DataciteContentType.lookup(VALID_ENUM_NAME);
         assertEquals(dataciteContentType, DataciteContentType.DATACITE_JSON);
-
     }
 
     @Test
@@ -27,7 +26,5 @@ public class DataciteContentTypeTest {
         });
 
         assertTrue(exception.getMessage().contains("Datacite Content Type not found for"));
-
     }
-
 }

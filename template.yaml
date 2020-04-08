@@ -7,12 +7,12 @@ Description: >
 
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: NVA-DOI-Proxy
+    Name: DoiProxy
     Description: Proxy DOI data requests to Datacite.
     Author: Unit
-    SemanticVersion: 1.0.0
     SpdxLicenseId: MIT
     LicenseUrl: LICENSE
+    Labels: ['${CODEBUILD_RESOLVED_SOURCE_VERSION}', '${GIT_REPO}']
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -60,7 +60,7 @@ Resources:
                     schema:
                       $ref: '#/components/schemas/DoiLookup'
                     example:
-                      doiUrl: 'https://doi.org/10.1109/5.771073'
+                      doi: 'https://doi.org/10.1109/5.771073'
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaDoiFunction.Arn}/invocations
@@ -96,17 +96,17 @@ Resources:
               title: Lookup DOI URL
               type: object
               properties:
-                doiUrl:
+                doi:
                   type: string
                   description: DOI URL
               required:
-                - doiUrl
+                - doi
   NvaDoiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: .
       Handler: no.unit.nva.doi.FetchDoiMetadata::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Environment:
         Variables:

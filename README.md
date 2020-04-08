@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/a3eea7e671324f7fb9fa271a20f63b70)](https://www.codacy.com/gh/BIBSYSDEV/nva-doi-lambda?utm_source=github.com&utm_medium=referral&utm_content=BIBSYSDEV/nva-doi-lambda&utm_campaign=Badge_Coverage)
 # nva-doi-resources-metadata-service
 
 A micro-service that takes an url as request parameter. The parameter is expected to b an doi-url. The micro-service will return eventually a map as json containing metadata on the resource (typically an article) given by its doi.

@@ -1,23 +1,21 @@
 package no.unit.nva.doi;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Paths;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Paths;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 public class DataciteClientTest {
 
     public static final String EXAMPLE_URL = "http://example.org";
     public static final String DATACITE_RESPONSE_FILE = "src/test/resources/dataciteResponse.json";
     public static final String EMPTY_RESPONSE_FILE = "src/test/resources/emptyResponse";
-
 
     @Test
     public void testMockUrl() throws IOException {
@@ -26,7 +24,8 @@ public class DataciteClientTest {
         when(dataciteClient.fetchMetadata(anyString(), any(DataciteContentType.class))).thenCallRealMethod();
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenReturn(new String());
 
-        String metadata = dataciteClient.fetchMetadata(EXAMPLE_URL, DataciteContentType.CITEPROC_JSON);
+        MetadataAndContentLocation metadata = dataciteClient
+            .fetchMetadata(EXAMPLE_URL, DataciteContentType.CITEPROC_JSON);
 
         Assert.assertNotNull(metadata);
     }
@@ -35,7 +34,8 @@ public class DataciteClientTest {
     public void testValidResponseUrl() throws IOException {
         DataciteClient dataciteClient = mock(DataciteClient.class);
         when(dataciteClient.readStringFromUrl(any(URL.class))).thenCallRealMethod();
-        String stringFromUrl = dataciteClient.readStringFromUrl(Paths.get(DATACITE_RESPONSE_FILE).toUri().toURL());
+        String stringFromUrl = dataciteClient
+            .readStringFromUrl(Paths.get(DATACITE_RESPONSE_FILE).toUri().toURL());
         Assert.assertNotNull(stringFromUrl);
     }
 

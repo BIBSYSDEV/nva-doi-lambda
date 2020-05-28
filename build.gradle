@@ -32,7 +32,7 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
     testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
-    testImplementation 'commons-io:commons-io:2.6'
+    testImplementation 'commons-io:commons-io:2.7'
 
     shadowJar {
         archiveClassifier.set('')
